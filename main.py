@@ -6,7 +6,7 @@ import pandas as pd
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QFileDialog, QTableWidget,
     QTableWidgetItem, QVBoxLayout, QWidget, QPushButton,
-    QHBoxLayout, QMessageBox, QLabel, QLineEdit
+    QHBoxLayout, QMessageBox, QLabel, QLineEdit, QProgressBar
 )
 from PyQt6.QtCore import QSettings
 from PyQt6.QtGui import QAction
@@ -14,6 +14,7 @@ from PyQt6.QtGui import QAction
 from settings_dialog import SettingsDialog
 from ai_manager_dialog import AIManagerDialog
 from providers.local_provider import MockProvider, OllamaProvider
+from translation_worker import TranslationWorker
 
 
 SUPPORTED_ENCODINGS = [
@@ -86,6 +87,8 @@ class SkyrimTranslator(QMainWindow):
         btn_load_dictionary = QPushButton("Cargar Diccionario")
         btn_apply_dictionary = QPushButton("Aplicar Diccionario")
         btn_translate_selected = QPushButton("Traducir Selección IA")
+        btn_translate_visible = QPushButton("Traducir Visibles IA")
+        btn_translate_all = QPushButton("Traducir Todo IA")
         
         # BOTONES FILTRO
         btn_all = QPushButton("Todos")
@@ -101,6 +104,8 @@ class SkyrimTranslator(QMainWindow):
         btn_load_dictionary.clicked.connect(self.load_dictionary)
         btn_apply_dictionary.clicked.connect(self.apply_dictionary)
         btn_translate_selected.clicked.connect(self.translate_selected_ai)
+        btn_translate_visible.clicked.connect(self.translate_visible_ai)
+        btn_translate_all.clicked.connect(self.translate_all_ai)
         btn_all.clicked.connect(self.show_all)
         btn_pending.clicked.connect(self.show_pending)
         btn_translated.clicked.connect(self.show_translated)
@@ -115,6 +120,8 @@ class SkyrimTranslator(QMainWindow):
         buttons.addWidget(btn_load_dictionary)
         buttons.addWidget(btn_apply_dictionary)
         buttons.addWidget(btn_translate_selected)
+        buttons.addWidget(btn_translate_visible)
+        buttons.addWidget(btn_translate_all)
 
         # LAYOUT ESTADÍSTICAS
         stats_layout = QHBoxLayout()
@@ -128,6 +135,18 @@ class SkyrimTranslator(QMainWindow):
         filter_buttons.addWidget(btn_pending)
         filter_buttons.addWidget(btn_translated)
 
+        # BARRA DE PROGRESO Y BOTÓN CANCELAR
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setValue(0)
+        self.progress_bar.setVisible(False)
+
+        btn_cancel_translation = QPushButton("Cancelar traducción")
+        btn_cancel_translation.clicked.connect(self.cancel_translation)
+        btn_cancel_translation.setVisible(False)
+
+        self.btn_cancel_translation = btn_cancel_translation
+        self.translation_worker = None
+
         # LAYOUT GENERAL
         layout = QVBoxLayout()
         layout.addLayout(buttons)
@@ -135,6 +154,8 @@ class SkyrimTranslator(QMainWindow):
         layout.addLayout(stats_layout)
         layout.addWidget(self.search_box)
         layout.addLayout(filter_buttons)
+        layout.addWidget(self.progress_bar)
+        layout.addWidget(self.btn_cancel_translation)
         layout.addWidget(self.table)
 
         container = QWidget()
@@ -172,6 +193,127 @@ class SkyrimTranslator(QMainWindow):
 
         return MockProvider()
 
+    def translate_rows_ai(self, rows):
+        if not rows:
+            QMessageBox.warning(
+                self,
+                "Aviso",
+                "No hay filas para traducir."
+            )
+            return
+
+        try:
+            provider = self.get_ai_provider()
+
+            originals = {}
+
+            for row in rows:
+                original = self.safe_text(row, 2)
+
+                if original:
+                    originals[row] = original
+
+            if not originals:
+                QMessageBox.warning(
+                    self,
+                    "Aviso",
+                    "No hay textos válidos para traducir."
+                )
+                return
+
+            self.progress_bar.setVisible(True)
+            self.progress_bar.setValue(0)
+            self.progress_bar.setMaximum(len(originals))
+
+            self.btn_cancel_translation.setVisible(True)
+
+            self.translation_worker = TranslationWorker(
+                list(originals.keys()),
+                originals,
+                provider
+            )
+
+            self.translation_worker.progress.connect(
+                self.on_translation_progress
+            )
+
+            self.translation_worker.row_translated.connect(
+                self.on_row_translated
+            )
+
+            self.translation_worker.finished.connect(
+                self.on_translation_finished
+            )
+
+            self.translation_worker.error.connect(
+                self.on_translation_error
+            )
+
+            self.translation_worker.start()
+
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Error IA",
+                str(e)
+            )
+
+    def on_translation_progress(self, current, total):
+        self.progress_bar.setMaximum(total)
+        self.progress_bar.setValue(current)
+
+    def on_row_translated(self, row, translated):
+        self.table.blockSignals(True)
+
+        self.table.setItem(
+            row,
+            3,
+            QTableWidgetItem(translated)
+        )
+
+        self.table.setItem(
+            row,
+            4,
+            QTableWidgetItem("Traducido")
+        )
+
+        self.table.blockSignals(False)
+
+        self.update_stats()
+
+    def on_translation_finished(self, translated_count):
+        self.progress_bar.setVisible(False)
+        self.btn_cancel_translation.setVisible(False)
+
+        self.update_stats()
+        self.apply_filters()
+
+        QMessageBox.information(
+            self,
+            "Traducción finalizada",
+            f"Se tradujeron {translated_count} registro(s)."
+        )
+
+    def on_translation_error(self, error_message):
+        self.progress_bar.setVisible(False)
+        self.btn_cancel_translation.setVisible(False)
+
+        QMessageBox.critical(
+            self,
+            "Error IA",
+            error_message
+        )
+
+    def cancel_translation(self):
+        if self.translation_worker:
+            self.translation_worker.cancel()
+
+            QMessageBox.information(
+                self,
+                "Cancelando",
+                "La traducción se cancelará al terminar el registro actual."
+            )
+
     def translate_selected_ai(self):
         selected = self.table.selectedItems()
 
@@ -184,42 +326,30 @@ class SkyrimTranslator(QMainWindow):
             return
 
         rows = sorted(set(item.row() for item in selected))
+        self.translate_rows_ai(rows)
 
-        try:
-            provider = self.get_ai_provider()
+    def translate_visible_ai(self):
+        rows = []
 
-            self.table.blockSignals(True)
+        for row in range(self.table.rowCount()):
+            if not self.table.isRowHidden(row):
+                rows.append(row)
 
-            for row in rows:
-                original = self.safe_text(row, 2)
+        self.translate_rows_ai(rows)
 
-                if not original:
-                    continue
+    def translate_all_ai(self):
+        rows = list(range(self.table.rowCount()))
 
-                translated = provider.translate(original)
+        confirm = QMessageBox.question(
+            self,
+            "Confirmar",
+            f"Vas a traducir {len(rows)} registros. Esto puede tardar bastante.\n\n¿Continuar?"
+        )
 
-                self.table.setItem(row, 3, QTableWidgetItem(translated))
-                self.table.setItem(row, 4, QTableWidgetItem("Traducido"))
+        if confirm != QMessageBox.StandardButton.Yes:
+            return
 
-            self.table.blockSignals(False)
-
-            self.update_stats()
-            self.apply_filters()
-
-            QMessageBox.information(
-                self,
-                "Listo",
-                f"Se tradujeron {len(rows)} fila(s)."
-            )
-
-        except Exception as e:
-            self.table.blockSignals(False)
-
-            QMessageBox.critical(
-                self,
-                "Error IA",
-                str(e)
-            )
+        self.translate_rows_ai(rows)
 
     def read_file_with_multiple_encodings(self, path):
         last_error = None
@@ -676,6 +806,11 @@ def apply_dark_theme(app):
         background-color: #3e3e42;
     }
 
+    QPushButton:disabled {
+        background-color: #1e1e1e;
+        color: #666;
+    }
+
     QLineEdit {
         background-color: #252526;
         color: white;
@@ -700,6 +835,19 @@ def apply_dark_theme(app):
 
     QLabel {
         color: #e6e6e6;
+    }
+
+    QProgressBar {
+        background-color: #252526;
+        border: 1px solid #3e3e42;
+        border-radius: 5px;
+        text-align: center;
+        color: white;
+    }
+
+    QProgressBar::chunk {
+        background-color: #094771;
+        border-radius: 5px;
     }
     """)
 
