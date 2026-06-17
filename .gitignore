@@ -1,0 +1,17 @@
+**pycache**/
+*.pyc
+*.pyo
+*.pyd
+
+venv/
+.env/
+
+config/settings.json
+
+exports/
+projects/
+
+.idea/
+.vscode/
+
+*.log
