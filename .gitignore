@@ -7,7 +7,7 @@ venv/
 .env/
 
 config/settings.json
-
+config/translation_cache.json
 exports/
 projects/
 
