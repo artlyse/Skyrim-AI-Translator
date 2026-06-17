@@ -33,6 +33,11 @@ SUPPORTED_ENCODINGS = [
     "euc-kr",
 ]
 
+CACHE_FILE = os.path.join(
+    "config",
+    "translation_cache.json"
+)
+
 
 class SkyrimTranslator(QMainWindow):
     def __init__(self):
@@ -146,6 +151,7 @@ class SkyrimTranslator(QMainWindow):
 
         self.btn_cancel_translation = btn_cancel_translation
         self.translation_worker = None
+        self.translation_cache = self.load_translation_cache()
 
         # LAYOUT GENERAL
         layout = QVBoxLayout()
@@ -163,6 +169,22 @@ class SkyrimTranslator(QMainWindow):
         self.setCentralWidget(container)
 
         self.table.itemChanged.connect(self.on_translation_changed)
+
+    def load_translation_cache(self):
+        if not os.path.exists(CACHE_FILE):
+            return {}
+
+        try:
+            with open(CACHE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+
+    def save_translation_cache(self, cache):
+        os.makedirs("config", exist_ok=True)
+
+        with open(CACHE_FILE, "w", encoding="utf-8") as f:
+            json.dump(cache, f, ensure_ascii=False, indent=4)
 
     def open_ai_settings(self):
         dialog = SettingsDialog(self)
@@ -206,31 +228,50 @@ class SkyrimTranslator(QMainWindow):
             provider = self.get_ai_provider()
 
             originals = {}
+            cached_translations = {}
 
             for row in rows:
                 original = self.safe_text(row, 2)
 
                 if original:
                     originals[row] = original
+                    
+                    # Verificar si ya está en caché
+                    if original in self.translation_cache:
+                        cached_translations[row] = self.translation_cache[original]
 
-            if not originals:
-                QMessageBox.warning(
+            # Si hay traducciones en caché, aplicarlas inmediatamente
+            if cached_translations:
+                self.table.blockSignals(True)
+                for row, translation in cached_translations.items():
+                    self.table.setItem(row, 3, QTableWidgetItem(translation))
+                    self.table.setItem(row, 4, QTableWidgetItem("Traducido"))
+                self.table.blockSignals(False)
+                self.update_stats()
+
+            # Filtrar filas que ya están en caché
+            rows_to_translate = [row for row in originals.keys() if row not in cached_translations]
+
+            if not rows_to_translate:
+                QMessageBox.information(
                     self,
-                    "Aviso",
-                    "No hay textos válidos para traducir."
+                    "Caché",
+                    f"Todos los textos ya estaban en caché. Se aplicaron {len(cached_translations)} traducciones."
                 )
+                self.apply_filters()
                 return
 
             self.progress_bar.setVisible(True)
             self.progress_bar.setValue(0)
-            self.progress_bar.setMaximum(len(originals))
+            self.progress_bar.setMaximum(len(rows_to_translate))
 
             self.btn_cancel_translation.setVisible(True)
 
             self.translation_worker = TranslationWorker(
-                list(originals.keys()),
-                originals,
-                provider
+                rows_to_translate,
+                {row: originals[row] for row in rows_to_translate},
+                provider,
+                self.translation_cache
             )
 
             self.translation_worker.progress.connect(
@@ -247,6 +288,10 @@ class SkyrimTranslator(QMainWindow):
 
             self.translation_worker.error.connect(
                 self.on_translation_error
+            )
+
+            self.translation_worker.cache_updated.connect(
+                self.on_cache_updated
             )
 
             self.translation_worker.start()
@@ -281,6 +326,10 @@ class SkyrimTranslator(QMainWindow):
 
         self.update_stats()
 
+    def on_cache_updated(self, cache):
+        self.translation_cache = cache
+        self.save_translation_cache(cache)
+
     def on_translation_finished(self, translated_count):
         self.progress_bar.setVisible(False)
         self.btn_cancel_translation.setVisible(False)
@@ -291,7 +340,8 @@ class SkyrimTranslator(QMainWindow):
         QMessageBox.information(
             self,
             "Traducción finalizada",
-            f"Se tradujeron {translated_count} registro(s)."
+            f"Se tradujeron {translated_count} registro(s).\n"
+            f"Caché guardada en: {CACHE_FILE}"
         )
 
     def on_translation_error(self, error_message):
