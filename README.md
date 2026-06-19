@@ -125,7 +125,7 @@ dist\SkyrimAITranslator.exe
 - 8 GB RAM recomendado
 - 500 MB de espacio libre
 
-### Dependencias Python (requirements.txt)
+### Dependencias Python para desarrolladores (requirements.txt)
 
 ```txt
 PyQt6>=6.4.0
@@ -136,7 +136,7 @@ pyinstaller>=5.0.0
 pillow>=9.0.0
 ```
 
-### 🤖 Modelos IA recomendados
+### 🤖 Modelos IA recomendados (Hay una lista muy variada)
 
 | Modelo | Tamaño | Uso recomendado |
 |----------|----------|----------|
@@ -296,10 +296,10 @@ IA → Configuración IA
   FormID|Signature|EDID|Field|Translated
 }
 ```
-
+Publicare pronto los scripts nesesarios para Xedit
 ---
 
-## 📁 Estructura del proyecto
+## 📁 Estructura del Funcionamiento-proyecto
 
 ```text
 SkyrimAITranslator/
@@ -419,6 +419,7 @@ git push origin feature/nueva-funcionalidad
 ---
 
 ## 🚀 Próximas mejoras
+(posible implementaciones futuras)
 
 - Lectura directa de archivos `.esp`
 - Lectura directa de archivos `.esm`
@@ -456,7 +457,7 @@ Este proyecto está distribuido bajo la licencia MIT.
 
 ### Artlyse.dev
 
-Desarrollado para la comunidad de modding de Skyrim con soporte para traducción mediante IA local y herramientas compatibles con xEdit.
+Desarrollado para uso personal y liberado para la comunidad de modding de Skyrim con soporte para traducción mediante IA local y herramientas compatibles con xEdit.
 
 ---
 
