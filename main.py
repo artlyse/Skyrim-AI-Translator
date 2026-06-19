@@ -230,6 +230,11 @@ class SkyrimTranslator(QMainWindow):
         action_clear_cache.triggered.connect(self.clear_cache)
         self.herramientas_menu.addAction(action_clear_cache)
         
+        # NUEVO: Reconstruir caché
+        action_rebuild_cache = QAction("🔄 Reconstruir caché (traducciones consistentes)", self)
+        action_rebuild_cache.triggered.connect(self.rebuild_cache)
+        self.herramientas_menu.addAction(action_rebuild_cache)
+        
         self.herramientas_menu.addSeparator()
         
         action_copy_original = QAction(self.tr("menu_copy_original"), self)
@@ -628,7 +633,11 @@ class SkyrimTranslator(QMainWindow):
         if original in self.translation_cache:
             lang_cache = self.translation_cache[original]
             if isinstance(lang_cache, dict):
-                return lang_cache.get(language)
+                # Si existe en el idioma solicitado
+                if language in lang_cache:
+                    return lang_cache[language]
+                # Si no existe en el idioma, devolver None (no usar español como fallback)
+                return None
             elif language == "Spanish":
                 return lang_cache
         return None
@@ -644,6 +653,91 @@ class SkyrimTranslator(QMainWindow):
         
         self.translation_cache[original][language] = translation
         self.save_translation_cache(self.translation_cache)
+
+    def clear_cache_entry(self, original):
+        """Elimina una entrada específica de la caché"""
+        if original in self.translation_cache:
+            del self.translation_cache[original]
+            self.save_translation_cache(self.translation_cache)
+            return True
+        return False
+
+    def rebuild_cache(self):
+        """Reconstruye la caché traduciendo nuevamente todos los textos únicos"""
+        if self.table.rowCount() == 0:
+            QMessageBox.warning(self, "Aviso", "Primero carga un archivo.")
+            return
+        
+        # Obtener todos los textos originales únicos
+        originals = set()
+        for row in range(self.table.rowCount()):
+            original = self.safe_text(row, 2)
+            if original:
+                originals.add(original)
+        
+        if not originals:
+            QMessageBox.warning(self, "Aviso", "No hay textos para procesar.")
+            return
+        
+        confirm = QMessageBox.question(
+            self,
+            "Reconstruir caché",
+            f"Se traducirán {len(originals)} textos únicos para el idioma '{self.target_language}'.\n\n"
+            "Esto puede tardar varios minutos.\n\n"
+            "¿Continuar?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        
+        if confirm != QMessageBox.StandardButton.Yes:
+            return
+        
+        try:
+            provider = self.get_ai_provider()
+            target_lang = self.target_language
+            
+            self.progress_bar.setVisible(True)
+            self.progress_bar.setValue(0)
+            self.progress_bar.setMaximum(len(originals))
+            self.btn_cancel_translation.setVisible(True)
+            
+            translated_count = 0
+            current = 0
+            
+            for original in originals:
+                # Verificar si ya está en caché para este idioma
+                if self.get_cached_translation(original, target_lang):
+                    current += 1
+                    self.progress_bar.setValue(current)
+                    continue
+                
+                try:
+                    translated = provider.translate(original)
+                    if translated and translated != original:
+                        self.set_cached_translation(original, target_lang, translated)
+                        translated_count += 1
+                except Exception as e:
+                    print(f"Error traduciendo '{original}': {e}")
+                
+                current += 1
+                self.progress_bar.setValue(current)
+            
+            self.progress_bar.setVisible(False)
+            self.btn_cancel_translation.setVisible(False)
+            
+            # Recargar la tabla para mostrar las nuevas traducciones
+            self.reload_table_translations()
+            
+            QMessageBox.information(
+                self,
+                "Caché reconstruida",
+                f"✅ Se tradujeron {translated_count} nuevos textos al idioma '{target_lang}'.\n\n"
+                f"Los textos duplicados ahora usarán las mismas traducciones."
+            )
+            
+        except Exception as e:
+            self.progress_bar.setVisible(False)
+            self.btn_cancel_translation.setVisible(False)
+            QMessageBox.critical(self, "Error", str(e))
 
     def reload_table_translations(self):
         """Recarga las traducciones de la tabla con el nuevo idioma destino"""
@@ -751,20 +845,40 @@ class SkyrimTranslator(QMainWindow):
             provider = self.get_ai_provider()
             target_lang = self.target_language
 
-            originals = {}
-            cached_translations = {}
-
+            # PRIMERO: Recopilar todos los textos únicos
+            originals_map = {}
+            unique_texts = {}
             for row in rows:
                 original = self.safe_text(row, 2)
                 if original:
-                    originals[row] = original
-                    if original in self.dictionary:
-                        cached_translations[row] = self.dictionary[original]
-                    else:
-                        cached = self.get_cached_translation(original, target_lang)
-                        if cached:
-                            cached_translations[row] = cached
+                    originals_map[row] = original
+                    if original not in unique_texts:
+                        unique_texts[original] = []
+                    unique_texts[original].append(row)
 
+            # SEGUNDO: Buscar en caché y diccionario
+            cached_translations = {}
+            texts_to_translate = []
+            
+            for original, row_list in unique_texts.items():
+                translation = None
+                
+                # Verificar en diccionario
+                if original in self.dictionary:
+                    translation = self.dictionary[original]
+                else:
+                    # Verificar en caché multidioma
+                    translation = self.get_cached_translation(original, target_lang)
+                
+                if translation:
+                    # Asignar a todas las filas que tienen este texto
+                    for row in row_list:
+                        cached_translations[row] = translation
+                else:
+                    # Marcar para traducción (solo una vez por texto único)
+                    texts_to_translate.append((original, row_list[0]))
+
+            # TERCERO: Aplicar traducciones en caché
             if cached_translations:
                 self.table.blockSignals(True)
                 for row, translation in cached_translations.items():
@@ -773,9 +887,8 @@ class SkyrimTranslator(QMainWindow):
                 self.table.blockSignals(False)
                 self.update_stats()
 
-            rows_to_translate = [row for row in originals.keys() if row not in cached_translations]
-
-            if not rows_to_translate:
+            # CUARTO: Traducir textos únicos que faltan
+            if not texts_to_translate:
                 QMessageBox.information(
                     self,
                     "Caché/Diccionario",
@@ -786,12 +899,13 @@ class SkyrimTranslator(QMainWindow):
 
             self.progress_bar.setVisible(True)
             self.progress_bar.setValue(0)
-            self.progress_bar.setMaximum(len(rows_to_translate))
+            self.progress_bar.setMaximum(len(texts_to_translate))
             self.btn_cancel_translation.setVisible(True)
 
+            # Crear worker con los textos únicos
             self.translation_worker = TranslationWorker(
-                rows_to_translate,
-                {row: originals[row] for row in rows_to_translate},
+                texts_to_translate,  # [(original, row)]
+                {original: original for original, row in texts_to_translate},
                 provider,
                 self.translation_cache,
                 self.dictionary,

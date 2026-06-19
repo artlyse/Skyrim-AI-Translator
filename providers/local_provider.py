@@ -483,42 +483,48 @@ class OllamaProvider:
         """Carga el prompt personalizado desde archivo de configuración"""
         prompt_path = os.path.join("config", "prompt_template.txt")
         
-        # Prompt mejorado con instrucciones para escritura nativa
+        # Prompt mejorado con reglas específicas para siglas y consistencia
         default_prompt = """You are a translator for Skyrim game mods. Translate from English to {language}.
 
 CRITICAL RULES - FOLLOW STRICTLY:
-1. Output ONLY the translation in {language}. Return NOTHING else.
+
+1. OUTPUT ONLY the translation in {language}. Return NOTHING else.
 2. Use the CORRECT NATIVE WRITING SYSTEM for the target language:
-   - Japanese (Japanese): Use Japanese characters (Kanji, Hiragana, Katakana). 
-     ABSOLUTELY NO romaji (Latin alphabet) for Japanese translations.
-   - Chinese (Chinese): Use Chinese characters.
-   - Korean (Korean): Use Hangul characters.
-   - Russian (Russian): Use Cyrillic characters.
+   - Japanese: Use Japanese characters (Kanji, Hiragana, Katakana). NO romaji.
+   - Chinese: Use Chinese characters.
+   - Korean: Use Hangul characters.
+   - Russian: Use Cyrillic characters.
    - Spanish/French/German/Italian/Portuguese: Use Latin alphabet with accents.
-3. Keep proper names (like Whiterun, FUS RO DAH) unchanged.
-4. Keep codes and abbreviations (like def, FX, DLC) unchanged.
-5. Translate literally, not creatively.
 
-LANGUAGE-SPECIFIC WRITING SYSTEM EXAMPLES:
-English: "Blood Decal Large"
-- Japanese: 血のデカール大 (NOT "Chi no dekāru dai" - this is romaji, WRONG!)
-- Chinese: 血贴花大
-- Korean: 혈액 데칼 대
-- Russian: Большая кровавая нашивка
+3. IMPORTANT - KEEP THESE EXACTLY AS THEY ARE (DO NOT TRANSLATE):
+   - Abbreviations: PMS, DLC, FX, NPC, PC, UI, FPS, RPG, PVP, PVE, MMO, ID, etc.
+   - Codes and identifiers: def, tmp, ref, var, etc.
+   - Names: Whiterun, FUS RO DAH, Dragonborn, Thu'um, etc.
+   - Numbers and percentages: 100%, 1.5x, 4K, etc.
+   - Technical terms that are game mechanics: Stamina, Magicka, Health (translate these consistently)
 
-English: "Bleed left arm"
-- Japanese: 左腕の出血 (NOT "Hidari ude no shukketsu" - this is romaji, WRONG!)
-- Chinese: 左臂出血
-- Korean: 왼쪽 팔 출혈
-- Russian: Кровотечение левой руки
+4. TRANSLATION RULES:
+   - Translate literally, not creatively.
+   - BE CONSISTENT: The same English word must always translate to the same {language} word.
+   - If the text is a technical label, translate it briefly.
+   - Do NOT add context or explanations.
+   - Do NOT invent meaning.
+   - Do NOT change the meaning of the text.
 
-English: "Slow Time"
-- Japanese: 時間停止 (NOT "Jikan teishi" - this is romaji, WRONG!)
-- Chinese: 时间停止
-- Korean: 시간 정지
-- Russian: Замедление времени
+5. EXAMPLES OF WHAT TO KEEP UNCHANGED:
+   - "PMS_Elf" → "PMS_Elf" (KEEP PMS)
+   - "DLC_Content" → "DLC_Content" (KEEP DLC)
+   - "FX_DustPile" → "FX_DustPile" (KEEP FX)
+   - "drinkF" → "drinkF" (KEEP the 'F' suffix)
+   - "FUS RO DAH" → "FUS RO DAH" (KEEP proper name)
 
-Text to translate (ONLY translate this exact text):
+6. EXAMPLES OF CORRECT TRANSLATIONS:
+   English: "Stamina" → Spanish: "Resistencia" (always the same)
+   English: "Magicka" → Spanish: "Magicka" (keep as is)
+   English: "Health" → Spanish: "Salud" (always the same)
+   English: "Bleed left arm" → Spanish: "Sangrado del brazo izquierdo"
+
+Text to translate:
 {text}
 
 Translation ({language}) in correct native writing system:"""
@@ -569,9 +575,7 @@ Translation ({language}) in correct native writing system:"""
                     result = result[len(prefix):].strip()
             
             # Para japonés, NO eliminar caracteres nativos
-            # Solo eliminar caracteres de control
             if self.target_language == "Japanese":
-                # Mantener caracteres japoneses, solo limpiar espacios extra
                 result = re.sub(r'\s+', ' ', result).strip()
             else:
                 # Para otros idiomas, limpiar caracteres extraños
