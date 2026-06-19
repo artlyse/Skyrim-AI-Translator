@@ -135,6 +135,8 @@ class SkyrimTranslator(QMainWindow):
         self.translation_worker = None
         self.translation_cache = self.load_translation_cache()
         self.migrate_cache_to_multilang()
+        self.same_text_is_translated = self.settings.get("same_text_is_translated", False)
+        self.pending_duplicate_rows = {}
 
         # LAYOUT GENERAL
         layout = QVBoxLayout()
@@ -234,6 +236,16 @@ class SkyrimTranslator(QMainWindow):
         action_rebuild_cache = QAction("🔄 Reconstruir caché (traducciones consistentes)", self)
         action_rebuild_cache.triggered.connect(self.rebuild_cache)
         self.herramientas_menu.addAction(action_rebuild_cache)
+
+        action_retranslate_selected = QAction("♻️ Retraducir seleccionados (ignorar caché)", self)
+        action_retranslate_selected.triggered.connect(self.retranslate_selected_ai)
+        self.herramientas_menu.addAction(action_retranslate_selected)
+
+        self.action_same_text_translated = QAction("✅ Texto igual cuenta como traducido", self)
+        self.action_same_text_translated.setCheckable(True)
+        self.action_same_text_translated.setChecked(self.settings.get("same_text_is_translated", False))
+        self.action_same_text_translated.triggered.connect(self.toggle_same_text_translated)
+        self.herramientas_menu.addAction(self.action_same_text_translated)
         
         self.herramientas_menu.addSeparator()
         
@@ -704,15 +716,10 @@ class SkyrimTranslator(QMainWindow):
             current = 0
             
             for original in originals:
-                # Verificar si ya está en caché para este idioma
-                if self.get_cached_translation(original, target_lang):
-                    current += 1
-                    self.progress_bar.setValue(current)
-                    continue
-                
                 try:
                     translated = provider.translate(original)
-                    if translated and translated != original:
+                    if translated:
+                        # El worker limpia mejor, pero aquí al menos evitamos cachear vacío.
                         self.set_cached_translation(original, target_lang, translated)
                         translated_count += 1
                 except Exception as e:
@@ -754,7 +761,7 @@ class SkyrimTranslator(QMainWindow):
             cached = self.get_cached_translation(original, self.target_language)
             if cached:
                 self.table.setItem(row, 3, QTableWidgetItem(cached))
-                self.table.setItem(row, 4, QTableWidgetItem(self.tr("status_translated")))
+                self.refresh_row_status(row)
             else:
                 self.table.setItem(row, 3, QTableWidgetItem(original))
                 self.table.setItem(row, 4, QTableWidgetItem(self.tr("status_pending")))
@@ -836,7 +843,7 @@ class SkyrimTranslator(QMainWindow):
             return OllamaProvider(settings)
         return MockProvider(settings)
 
-    def translate_rows_ai(self, rows):
+    def translate_rows_ai(self, rows, force_retranslate=False):
         if not rows:
             QMessageBox.warning(self, self.tr("msg_warning"), self.tr("msg_no_rows"))
             return
@@ -863,11 +870,10 @@ class SkyrimTranslator(QMainWindow):
             for original, row_list in unique_texts.items():
                 translation = None
                 
-                # Verificar en diccionario
-                if original in self.dictionary:
+                # Verificar en diccionario/caché, salvo cuando se fuerce retraducción
+                if not force_retranslate and original in self.dictionary:
                     translation = self.dictionary[original]
-                else:
-                    # Verificar en caché multidioma
+                elif not force_retranslate:
                     translation = self.get_cached_translation(original, target_lang)
                 
                 if translation:
@@ -877,13 +883,14 @@ class SkyrimTranslator(QMainWindow):
                 else:
                     # Marcar para traducción (solo una vez por texto único)
                     texts_to_translate.append((original, row_list[0]))
+                    self.pending_duplicate_rows[row_list[0]] = row_list
 
             # TERCERO: Aplicar traducciones en caché
             if cached_translations:
                 self.table.blockSignals(True)
                 for row, translation in cached_translations.items():
                     self.table.setItem(row, 3, QTableWidgetItem(translation))
-                    self.table.setItem(row, 4, QTableWidgetItem(self.tr("status_translated")))
+                    self.refresh_row_status(row)
                 self.table.blockSignals(False)
                 self.update_stats()
 
@@ -909,7 +916,9 @@ class SkyrimTranslator(QMainWindow):
                 provider,
                 self.translation_cache,
                 self.dictionary,
-                target_lang
+                target_lang,
+                force_retranslate=force_retranslate,
+                cache_same_as_original=self.same_text_is_translated
             )
 
             self.translation_worker.progress.connect(self.on_translation_progress)
@@ -927,10 +936,12 @@ class SkyrimTranslator(QMainWindow):
         self.progress_bar.setMaximum(total)
         self.progress_bar.setValue(current)
 
-    def on_row_translated(self, row, translated):
+    def on_row_translated(self, row, original, translated):
         self.table.blockSignals(True)
-        self.table.setItem(row, 3, QTableWidgetItem(translated))
-        self.table.setItem(row, 4, QTableWidgetItem(self.tr("status_translated")))
+        rows_to_update = self.pending_duplicate_rows.pop(row, [row])
+        for target_row in rows_to_update:
+            self.table.setItem(target_row, 3, QTableWidgetItem(translated))
+            self.refresh_row_status(target_row)
         self.table.blockSignals(False)
         self.update_stats()
 
@@ -957,6 +968,22 @@ class SkyrimTranslator(QMainWindow):
         if self.translation_worker:
             self.translation_worker.cancel()
             QMessageBox.information(self, self.tr("Cancelando"), self.tr("msg_cancel_translation"))
+
+
+    def retranslate_selected_ai(self):
+        selected = self.table.selectedItems()
+        if not selected:
+            QMessageBox.warning(self, self.tr("msg_warning"), self.tr("msg_select_rows"))
+            return
+        rows = sorted(set(item.row() for item in selected))
+        self.translate_rows_ai(rows, force_retranslate=True)
+
+    def toggle_same_text_translated(self, checked):
+        self.same_text_is_translated = bool(checked)
+        self.settings["same_text_is_translated"] = self.same_text_is_translated
+        self.save_settings()
+        self.refresh_all_statuses()
+        self.apply_filters()
 
     def translate_selected_ai(self):
         selected = self.table.selectedItems()
@@ -1087,6 +1114,47 @@ class SkyrimTranslator(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Error al abrir archivo", str(e))
 
+    def clean_ai_explanation_text(self, text):
+        """Quita notas y explicaciones que la IA pudo haber metido en el texto."""
+        import re
+        text = str(text or "").replace("\ufeff", "").strip()
+        text = re.sub(r'^\s*["“”\'`]+|["“”\'`]+\s*$', '', text).strip()
+
+        markers = [
+            r'Traducci[oó]n\s*\([^)]*\)\s*:', r'Traducci[oó]n\s*:',
+            r'Translation\s*\([^)]*\)\s*:', r'Translation\s*:',
+            r'Respuesta\s*(?:en\s+espa[nñ]ol)?\s*:', r'Response\s*:',
+            r'Resultado\s*:', r'Result\s*:', r'Output\s*:', r'Salida\s*:',
+            r'Correct translation\s*\([^)]*\)\s*:', r'Correction in Spanish\s*:'
+        ]
+        for marker in markers:
+            matches = list(re.finditer(marker, text, flags=re.I))
+            if matches:
+                text = text[matches[-1].end():].strip()
+
+        cut_patterns = [
+            r'\s*\(\s*(?:please note|remember|note|notes|nota|notas|explanation|explicaci[oó]n|incorrect|wrong|keep|as per|for consistency|blood loss|no requiere|there is no need|this is because|this translation).*?\)\s*$',
+            r'\s+(?:Please note|Remember|Note|Notes|Nota|Notas|Explanation|Explicaci[oó]n|Incorrect|Wrong)\s*:.*$',
+            r'\s+(?:This translation|This keeps|This is because|I have|I\'ve|He mantenido|As per your rules|For consistency).*$',
+            r'\s+(?:KEEP|Keep)\s+(?:as is|exactly|MC|the).*$',
+            r'\s+No se requiere traducci[oó]n\s*.*$',
+            r'\s+There(?:\'s| is) no need for translation\s*.*$',
+            r'\s+In this case, there(?:\'s| is) no need for translation\s*.*$',
+            r'\s+Correct translation\s*.*$',
+            r'\s+Correction in Spanish\s*.*$',
+        ]
+        changed = True
+        while changed:
+            before = text
+            for pat in cut_patterns:
+                text = re.sub(pat, '', text, flags=re.I | re.S).strip()
+            changed = before != text
+
+        text = re.sub(r'[\u3040-\u30ff\u4e00-\u9fff\uac00-\ud7af]+', '', text)
+        text = re.sub(r'\s+', ' ', text).strip()
+        text = re.sub(r'\s+([.,;:!?])', r'\1', text).strip()
+        return text
+
     def load_xedit_export(self, df, path):
         """Carga un archivo exportado con el formato completo de xEdit"""
         rows = []
@@ -1176,7 +1244,7 @@ class SkyrimTranslator(QMainWindow):
             try:
                 formid = str(r["FormID"]).strip()
                 edid = str(r["EDID"]).strip()
-                original = str(r["FULL"]).strip()
+                original = self.clean_ai_explanation_text(r["FULL"])
                 
                 if not original or original == 'FULL':
                     continue
@@ -1226,7 +1294,7 @@ class SkyrimTranslator(QMainWindow):
             edid = item["edid"]
             original = item["original"]
             translated = item["translated"]
-            estado = self.tr("status_translated") if original != translated else self.tr("status_pending")
+            estado = self.tr("status_translated") if self.is_translation_done(original, translated) else self.tr("status_pending")
             
             self.table.setItem(row, 0, QTableWidgetItem(formid))
             self.table.setItem(row, 1, QTableWidgetItem(edid))
@@ -1317,7 +1385,7 @@ class SkyrimTranslator(QMainWindow):
         row = item.row()
         original = self.safe_text(row, 2)
         translated = self.safe_text(row, 3)
-        estado = self.tr("status_translated") if original != translated else self.tr("status_pending")
+        estado = self.tr("status_translated") if self.is_translation_done(original, translated) else self.tr("status_pending")
         self.table.blockSignals(True)
         self.table.setItem(row, 4, QTableWidgetItem(estado))
         self.table.blockSignals(False)
@@ -1336,10 +1404,33 @@ class SkyrimTranslator(QMainWindow):
         for row in rows:
             original = self.safe_text(row, 2)
             self.table.setItem(row, 3, QTableWidgetItem(original))
-            self.table.setItem(row, 4, QTableWidgetItem(self.tr("status_translated")))
+            self.refresh_row_status(row)
         self.table.blockSignals(False)
         self.update_stats()
         self.apply_filters()
+
+
+    def is_translation_done(self, original, translated):
+        translated = (translated or "").strip()
+        original = (original or "").strip()
+        if not translated:
+            return False
+        if self.same_text_is_translated:
+            return True
+        return translated != original
+
+    def refresh_row_status(self, row):
+        original = self.safe_text(row, 2)
+        translated = self.safe_text(row, 3)
+        status = self.tr("status_translated") if self.is_translation_done(original, translated) else self.tr("status_pending")
+        self.table.setItem(row, 4, QTableWidgetItem(status))
+
+    def refresh_all_statuses(self):
+        self.table.blockSignals(True)
+        for row in range(self.table.rowCount()):
+            self.refresh_row_status(row)
+        self.table.blockSignals(False)
+        self.update_stats()
 
     def update_stats(self):
         total = self.table.rowCount()
@@ -1488,7 +1579,7 @@ class SkyrimTranslator(QMainWindow):
             if original in self.dictionary:
                 traduccion = self.dictionary[original]
                 self.table.setItem(row, 3, QTableWidgetItem(traduccion))
-                self.table.setItem(row, 4, QTableWidgetItem(self.tr("status_translated")))
+                self.refresh_row_status(row)
                 cambios += 1
         self.table.blockSignals(False)
         self.update_stats()

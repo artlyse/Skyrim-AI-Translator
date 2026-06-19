@@ -484,50 +484,27 @@ class OllamaProvider:
         prompt_path = os.path.join("config", "prompt_template.txt")
         
         # Prompt mejorado con reglas específicas para siglas y consistencia
-        default_prompt = """You are a translator for Skyrim game mods. Translate from English to {language}.
+        default_prompt = """You are a professional English to {language} translator for Skyrim game mods.
 
-CRITICAL RULES - FOLLOW STRICTLY:
+Return ONLY the final translated text. No notes, no explanations, no alternatives, no labels.
 
-1. OUTPUT ONLY the translation in {language}. Return NOTHING else.
-2. Use the CORRECT NATIVE WRITING SYSTEM for the target language:
-   - Japanese: Use Japanese characters (Kanji, Hiragana, Katakana). NO romaji.
-   - Chinese: Use Chinese characters.
-   - Korean: Use Hangul characters.
-   - Russian: Use Cyrillic characters.
-   - Spanish/French/German/Italian/Portuguese: Use Latin alphabet with accents.
+Rules:
+- Translate naturally to real {language}.
+- Keep IDs/codes/acronyms unchanged only when they are part of a code: MC_, DLC, FX, NPC, PMS, def, tmp, ref, var, FUS RO DAH.
+- Do not add context. Do not write phrases like "no translation needed", "keep as is", "note", or "explanation".
+- If the best translation is exactly the same as the original, return exactly the same text and nothing else.
+- Use consistent Skyrim terms: Health = Salud, Stamina = Resistencia, Magicka = Magicka.
 
-3. IMPORTANT - KEEP THESE EXACTLY AS THEY ARE (DO NOT TRANSLATE):
-   - Abbreviations: PMS, DLC, FX, NPC, PC, UI, FPS, RPG, PVP, PVE, MMO, ID, etc.
-   - Codes and identifiers: def, tmp, ref, var, etc.
-   - Names: Whiterun, FUS RO DAH, Dragonborn, Thu'um, etc.
-   - Numbers and percentages: 100%, 1.5x, 4K, etc.
-   - Technical terms that are game mechanics: Stamina, Magicka, Health (translate these consistently)
+Examples:
+Blood Decal Large -> Mancha de sangre grande
+Bleed left arm -> Sangrado del brazo izquierdo
+Armor Explosion def -> Explosión de armadura def
+Gore Pile -> Montón de vísceras
 
-4. TRANSLATION RULES:
-   - Translate literally, not creatively.
-   - BE CONSISTENT: The same English word must always translate to the same {language} word.
-   - If the text is a technical label, translate it briefly.
-   - Do NOT add context or explanations.
-   - Do NOT invent meaning.
-   - Do NOT change the meaning of the text.
-
-5. EXAMPLES OF WHAT TO KEEP UNCHANGED:
-   - "PMS_Elf" → "PMS_Elf" (KEEP PMS)
-   - "DLC_Content" → "DLC_Content" (KEEP DLC)
-   - "FX_DustPile" → "FX_DustPile" (KEEP FX)
-   - "drinkF" → "drinkF" (KEEP the 'F' suffix)
-   - "FUS RO DAH" → "FUS RO DAH" (KEEP proper name)
-
-6. EXAMPLES OF CORRECT TRANSLATIONS:
-   English: "Stamina" → Spanish: "Resistencia" (always the same)
-   English: "Magicka" → Spanish: "Magicka" (keep as is)
-   English: "Health" → Spanish: "Salud" (always the same)
-   English: "Bleed left arm" → Spanish: "Sangrado del brazo izquierdo"
-
-Text to translate:
+Text:
 {text}
 
-Translation ({language}) in correct native writing system:"""
+Final translation:"""
         
         try:
             if os.path.exists(prompt_path):
@@ -562,26 +539,30 @@ Translation ({language}) in correct native writing system:"""
             data = response.json()
             result = data.get("response", "").strip()
 
-            # Limpiar prefijos comunes
-            prefixes = [
-                "Translation:", "Traducción:", "Resultado:", 
-                "Result:", "Output:", "Salida:", "Response:", 
-                "Respuesta:", f"Translation ({self.target_language}):",
-                "Translation", "Traducción"
+            markers = [
+                r"Translation\s*\([^)]*\)\s*:", r"Translation\s*:",
+                r"Traducci[oó]n\s*\([^)]*\)\s*:", r"Traducci[oó]n\s*:",
+                r"Resultado\s*:", r"Result\s*:", r"Output\s*:", r"Salida\s*:",
+                r"Response\s*:", r"Respuesta\s*(?:en\s+espa[nñ]ol)?\s*:",
+                r"Final translation\s*:"
             ]
-            
-            for prefix in prefixes:
-                if result.startswith(prefix):
-                    result = result[len(prefix):].strip()
-            
-            # Para japonés, NO eliminar caracteres nativos
-            if self.target_language == "Japanese":
-                result = re.sub(r'\s+', ' ', result).strip()
-            else:
-                # Para otros idiomas, limpiar caracteres extraños
-                clean_pattern = re.compile(r'[^\w\s.,;:!?¿¡()\-\'"]+', re.UNICODE)
-                result = clean_pattern.sub('', result)
-            
+            for marker in markers:
+                matches = list(re.finditer(marker, result, flags=re.I))
+                if matches:
+                    result = result[matches[-1].end():].strip()
+
+            result = re.sub(
+                r"\s*\(\s*(?:please note|note|nota|notas|explanation|explicaci[oó]n|incorrect|wrong|keep|no requiere|there is no need).*?\)\s*$",
+                "", result, flags=re.I | re.S
+            )
+            result = re.sub(r"\s+(?:Please note|Note|Nota|Notas|Explanation|Explicaci[oó]n)\s*:.*$", "", result, flags=re.I | re.S)
+            result = re.sub(r"\s+(?:This is because|I have|I've|He mantenido|No se requiere traducci[oó]n).*?$", "", result, flags=re.I | re.S)
+
+            if self.target_language != "Japanese":
+                result = re.sub(r"[\u3040-\u30ff\u4e00-\u9fff\uac00-\ud7af]+", "", result)
+                result = re.sub(r"[^\w\s.,;:!?¿¡()\-\'\"/ÁÉÍÓÚÜÑáéíóúüñ]+", "", result, flags=re.UNICODE)
+
+            result = re.sub(r'\s+', ' ', result).strip().strip(' "“”`')
             if not result:
                 return text
 

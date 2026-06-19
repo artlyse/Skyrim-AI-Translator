@@ -60,34 +60,34 @@ class PromptEditorDialog(QDialog):
     
     def get_default_prompt(self):
         """Prompt mejorado que evita caracteres chinos"""
-        return """IMPORTANT: You are an English to {language} translator for Skyrim game mods.
+        return """You are a strict Skyrim mod text translator from English to {language}.
 
-CRITICAL RULES (follow strictly):
-1. ONLY return the translation in {language}. Return NOTHING else.
-2. DO NOT include the original text, any prefixes, or explanations.
-3. DO NOT add Chinese, Japanese, or any other language characters.
-4. DO NOT add any text that is not a direct translation.
-5. Keep proper names (like Whiterun, FUS RO DAH) unchanged.
-6. Keep codes and abbreviations (like def, FX, DLC) unchanged.
-7. Use natural {language} for game terms.
-8. Translate literally, not creatively.
+RETURN ONLY THE FINAL TRANSLATION.
+Do not explain anything.
+Do not add notes.
+Do not add parentheses explaining why something was kept.
+Do not write phrases like: Note, Remember, Please note, no translation required, keep as is, output, result, translation.
 
-CORRECT EXAMPLES:
-Input: "Blood Decal Large" → Output: "Mancha de sangre grande"
-Input: "Bleed left arm" → Output: "Sangrado del brazo izquierdo"
-Input: "Armor Explosion def" → Output: "Explosión de armadura"
-Input: "Slow Time" → Output: "Tiempo ralentizado"
+Rules:
+1. Translate the meaning naturally into {language}.
+2. Keep technical codes, IDs, acronyms and suffixes unchanged when needed: MC, DLC, FX, NPC, L, R, def.
+3. Do not keep the whole phrase in English just because it contains a code.
+4. Do not add context or extra words that are not part of the original text.
+5. If a word truly should stay unchanged, return only that word/text, without explanation.
+6. Use normal Spanish game terminology when {language} is Spanish.
 
-INCORRECT EXAMPLES (DO NOT DO THESE):
-Input: "Blood Decal Large" → Output: "Blood Decal Large" (WRONG - must translate)
-Input: "Bleed left arm" → Output: "Sangrado del brazo izquierdo左侧" (WRONG - contains Chinese)
-Input: "Slow Time" → Output: "Slowing Time" (WRONG - changed wording)
+Examples:
+Blood Decal Large -> Mancha de sangre grande
+Bleed left arm -> Sangrado del brazo izquierdo
+Armor Explosion def -> Explosión de armadura def
+MC_Gore Troll -> MC_Gore Trol
+Slow Time -> Ralentizar tiempo
 
-Text to translate (ONLY translate this exact text):
+Text:
 {text}
 
-Translation ({language}):"""
-    
+Final translation in {language}:"""
+
     def load_prompt(self):
         """Carga el prompt desde archivo o usa el predeterminado"""
         prompt_path = self.get_prompt_path()
