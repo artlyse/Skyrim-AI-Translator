@@ -99,3 +99,372 @@ pip install -r requirements.txt
 
 # Ejecutar
 python main.py
+
+### Opción C: Compilar EXE manualmente
+
+```bash
+# Instalar PyInstaller
+pip install pyinstaller
+
+# Compilar con icono
+python -m PyInstaller --onefile --windowed --icon="icon.ico" --add-data "languages.py;." --add-data "settings_dialog.py;." --add-data "ai_manager_dialog.py;." --add-data "prompt_editor_dialog.py;." --add-data "translation_worker.py;." --add-data "providers;providers" --add-data "assets;assets" --add-data "icon.ico;." --hidden-import PyQt6 --hidden-import PyQt6.QtCore --hidden-import PyQt6.QtGui --hidden-import PyQt6.QtWidgets --hidden-import pandas --hidden-import chardet --hidden-import requests --name="SkyrimAITranslator" main.py
+
+# El EXE se generará en:
+dist\SkyrimAITranslator.exe
+```
+
+---
+
+## 📦 Dependencias
+
+### Requisitos del sistema
+
+- Windows 7 / 8 / 10 / 11 (64-bit)
+- Ollama (Opcional)
+- 4 GB RAM mínimo
+- 8 GB RAM recomendado
+- 500 MB de espacio libre
+
+### Dependencias Python (requirements.txt)
+
+```txt
+PyQt6>=6.4.0
+pandas>=1.5.0
+chardet>=5.0.0
+requests>=2.28.0
+pyinstaller>=5.0.0
+pillow>=9.0.0
+```
+
+### 🤖 Modelos IA recomendados
+
+| Modelo | Tamaño | Uso recomendado |
+|----------|----------|----------|
+| qwen2.5:1.5b | ~1.5 GB | Ligero y rápido |
+| qwen2.5:3b | ~3 GB | Equilibrio calidad/velocidad |
+| gemma2:2b | ~1.5 GB | Eficiente y preciso |
+| mistral | ~4.5 GB | Mayor calidad |
+| llama3.2:3b | ~2.5 GB | Moderno y eficiente |
+
+---
+
+## 📖 Uso
+
+### Flujo de trabajo completo
+
+```text
+1. xEdit → Exportar → Archivo TXT
+2. App → Abrir TXT → Traducir
+3. App → Exportar → Archivo TXT traducido
+4. xEdit → Importar → Traducciones aplicadas
+```
+
+### Paso 1: Exportar desde xEdit
+
+1. Abre xEdit con tu plugin cargado
+2. Selecciona el plugin
+3. Haz clic derecho → Apply Script
+4. Selecciona `Skyrim_Texts_Export`
+5. El archivo se guardará en:
+
+```text
+Edit Scripts\Skyrim_Texts_Export.txt
+```
+
+### Paso 2: Abrir en la aplicación
+
+```text
+Archivo → Abrir TXT de xEdit
+```
+
+Selecciona:
+
+```text
+Skyrim_Texts_Export.txt
+```
+
+### Paso 3: Traducir
+
+Opciones disponibles:
+
+- Traducir seleccionados → Filas seleccionadas
+- Retraducir seleccionados → Ignora caché
+- Traducir visibles → Filas filtradas
+- Traducir todo → Todas las filas
+
+### Paso 4: Exportar traducciones
+
+```text
+Herramientas → Exportar traducciones para xEdit
+```
+
+Guardar como:
+
+```text
+Skyrim_Texts_Translated.txt
+```
+
+### Paso 5: Importar en xEdit
+
+1. Copia el archivo en:
+
+```text
+Edit Scripts\
+```
+
+2. Ejecuta:
+
+```text
+Apply Script → Skyrim_Texts_Import
+```
+
+---
+
+## ⚙️ Configuración
+
+### Acceso
+
+```text
+IA → Configuración IA
+```
+
+### Idiomas disponibles
+
+| Código | Idioma |
+|----------|----------|
+| Spanish | Español |
+| English | Inglés |
+| French | Francés |
+| German | Alemán |
+| Italian | Italiano |
+| Portuguese | Portugués |
+| Russian | Ruso |
+| Japanese | Japonés |
+| Chinese | Chino |
+| Korean | Coreano |
+
+### Temperatura recomendada
+
+| Valor | Resultado |
+|----------|----------|
+| 0.1 - 0.2 | Traducciones limpias y literales |
+| 0.3 - 0.5 | Traducciones más naturales |
+| 0.6 - 1.0 | Traducciones creativas |
+
+### Temas visuales
+
+#### 🌙 Oscuro
+
+- Diseño moderno
+- Colores optimizados para largas sesiones
+- Recomendado
+
+#### ☀️ Claro
+
+- Estilo clásico
+- Fondo blanco
+- Mayor contraste
+
+---
+
+## 🛠️ Scripts de xEdit
+
+### Exportar (Skyrim_Texts_Export.pas)
+
+```pascal
+{
+  Exporta textos:
+  FULL
+  DESC
+  CNAM
+  DNAM
+  BOOK_TEXT
+
+  Formato:
+  FormID|Signature|EDID|Field|Original
+}
+```
+
+### Importar (Skyrim_Texts_Import.pas)
+
+```pascal
+{
+  Importa traducciones desde:
+  Skyrim_Texts_Translated.txt
+
+  Formato:
+  FormID|Signature|EDID|Field|Translated
+}
+```
+
+---
+
+## 📁 Estructura del proyecto
+
+```text
+SkyrimAITranslator/
+├── main.py
+├── languages.py
+├── settings_dialog.py
+├── ai_manager_dialog.py
+├── prompt_editor_dialog.py
+├── translation_worker.py
+├── providers/
+│   └── local_provider.py
+├── assets/
+│   └── app_logo.png
+├── config/
+│   ├── settings.json
+│   ├── translation_cache.json
+│   └── auto_save.json
+├── xEdit_Scripts/
+│   ├── Skyrim_Texts_Export.pas
+│   └── Skyrim_Texts_Import.pas
+├── icon.ico
+├── requirements.txt
+├── README.md
+└── .gitignore
+```
+
+---
+
+## 🐛 Solución de problemas
+
+### Error: "Ollama no está instalado"
+
+**Solución**
+
+- Instala Ollama
+- Verifica que el servicio esté ejecutándose
+- Descarga modelos desde:
+
+```text
+IA → Administrar modelos Ollama
+```
+
+---
+
+### Error: "No se pudo leer el archivo"
+
+**Solución**
+
+- Verifica que el archivo sea UTF-8
+- Asegúrate de usar el separador `|`
+- Guarda como UTF-8 sin BOM usando Notepad++
+
+---
+
+### Error: "El icono no aparece en el EXE"
+
+**Solución**
+
+- Verifica que `icon.ico` contenga múltiples tamaños
+- Recompila usando:
+
+```bash
+--icon="icon.ico"
+```
+
+- Actualiza la caché de iconos de Windows
+
+---
+
+### Error: "La IA traduce con caracteres extraños"
+
+**Solución**
+
+1. Abre:
+
+```text
+IA → Editor de Prompt
+```
+
+2. Verifica que el prompt indique:
+
+- Traducir usando escritura nativa
+- No usar explicaciones
+- No usar transliteraciones
+
+Ejemplo:
+
+- Japonés → Kanji/Kana
+- Chino → Caracteres chinos
+- Coreano → Hangul
+
+---
+
+## 🤝 Contribuir
+
+1. Haz Fork del repositorio
+2. Crea una rama
+
+```bash
+git checkout -b feature/nueva-funcionalidad
+```
+
+3. Realiza tus cambios
+
+```bash
+git commit -m "Añade nueva funcionalidad"
+```
+
+4. Sube los cambios
+
+```bash
+git push origin feature/nueva-funcionalidad
+```
+
+5. Abre un Pull Request
+
+---
+
+## 🚀 Próximas mejoras
+
+- Lectura directa de archivos `.esp`
+- Lectura directa de archivos `.esm`
+- Lectura directa de archivos `.esl`
+- Compatibilidad con `.strings`
+- Arrastrar y soltar archivos
+- Traducción automática al abrir archivos
+- Más proveedores IA
+- Instalador para Windows
+- Actualización automática
+- Traducción por lotes de múltiples archivos
+
+---
+
+## 🐞 Reportar problemas
+
+Al abrir un Issue incluye:
+
+- Versión de Windows
+- Versión de Skyrim AI Translator
+- Modelo IA utilizado
+- Pasos para reproducir el problema
+- Capturas de pantalla
+- Logs si están disponibles
+
+---
+
+## 📜 Licencia
+
+Este proyecto está distribuido bajo la licencia MIT.
+
+---
+
+## 👨‍💻 Autor
+
+### Artlyse.dev
+
+Desarrollado para la comunidad de modding de Skyrim con soporte para traducción mediante IA local y herramientas compatibles con xEdit.
+
+---
+
+<p align="center">
+  <img src="assets/app_logo.png" width="96">
+</p>
+
+<p align="center">
+  <strong>Skyrim AI Translator</strong><br>
+  Traduce mods de Skyrim con IA local, rapidez y consistencia.
+</p>
