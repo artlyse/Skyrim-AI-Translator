@@ -465,7 +465,9 @@ class MockProvider:
         if text in lang_dict:
             return lang_dict[text]
         
-        return f"[{self.target_language}] {text}"
+        # Mock ya no antepone [Spanish]/[Chinese]/[Korean].
+        # Si no hay diccionario para ese idioma, deja el texto igual para evitar basura visual.
+        return text
 
 
 class OllamaProvider:
@@ -483,23 +485,36 @@ class OllamaProvider:
         """Carga el prompt personalizado desde archivo de configuración"""
         prompt_path = os.path.join("config", "prompt_template.txt")
         
-        # Prompt mejorado con reglas específicas para siglas y consistencia
-        default_prompt = """You are a professional English to {language} translator for Skyrim game mods.
+        # Prompt estricto multidioma: evita prefijos como Chinese/Korean y explicaciones.
+        default_prompt = """You are a strict Skyrim mod text translator from English to {language}.
 
-Return ONLY the final translated text. No notes, no explanations, no alternatives, no labels.
+RETURN ONLY THE FINAL TRANSLATED TEXT.
+Do not write the target language name.
+Do not write prefixes like Chinese:, Korean:, Spanish:, Translation:, Output:, Result:.
+Do not explain anything.
+Do not add notes.
+Do not add parentheses explaining why something was kept.
+Do not write phrases like: Note, Remember, Please note, no translation required, keep as is.
 
-Rules:
-- Translate naturally to real {language}.
-- Keep IDs/codes/acronyms unchanged only when they are part of a code: MC_, DLC, FX, NPC, PMS, def, tmp, ref, var, FUS RO DAH.
-- Do not add context. Do not write phrases like "no translation needed", "keep as is", "note", or "explanation".
-- If the best translation is exactly the same as the original, return exactly the same text and nothing else.
-- Use consistent Skyrim terms: Health = Salud, Stamina = Resistencia, Magicka = Magicka.
+Native script rules:
+- Chinese: use Chinese characters only for translated words.
+- Korean: use Hangul for translated words.
+- Japanese: use Japanese characters, not romaji.
+- Russian: use Cyrillic.
+- Spanish, French, German, Italian and Portuguese: use natural wording with accents when needed.
+
+Translation rules:
+1. Translate the meaning naturally into {language}.
+2. Keep technical codes, IDs, acronyms and suffixes unchanged only when they are codes: MC, DLC, FX, NPC, L, R, def.
+3. Do not keep the whole phrase in English just because it contains a code.
+4. Do not add context or extra words that are not part of the original text.
+5. If the whole text is only a code, return only that code.
 
 Examples:
 Blood Decal Large -> Mancha de sangre grande
 Bleed left arm -> Sangrado del brazo izquierdo
 Armor Explosion def -> Explosión de armadura def
-Gore Pile -> Montón de vísceras
+Slow Time -> Ralentizar tiempo
 
 Text:
 {text}
@@ -539,30 +554,11 @@ Final translation:"""
             data = response.json()
             result = data.get("response", "").strip()
 
-            markers = [
-                r"Translation\s*\([^)]*\)\s*:", r"Translation\s*:",
-                r"Traducci[oó]n\s*\([^)]*\)\s*:", r"Traducci[oó]n\s*:",
-                r"Resultado\s*:", r"Result\s*:", r"Output\s*:", r"Salida\s*:",
-                r"Response\s*:", r"Respuesta\s*(?:en\s+espa[nñ]ol)?\s*:",
-                r"Final translation\s*:"
-            ]
-            for marker in markers:
-                matches = list(re.finditer(marker, result, flags=re.I))
-                if matches:
-                    result = result[matches[-1].end():].strip()
+            # La limpieza final fuerte está en TranslationWorker. Aquí solo normalizamos
+            # sin borrar caracteres chinos, coreanos, japoneses o cirílicos.
+            result = re.sub(r'\s+', ' ', result).strip()
+            result = re.sub(r"^[\"“”'`]+|[\"“”'`]+$", '', result).strip()
 
-            result = re.sub(
-                r"\s*\(\s*(?:please note|note|nota|notas|explanation|explicaci[oó]n|incorrect|wrong|keep|no requiere|there is no need).*?\)\s*$",
-                "", result, flags=re.I | re.S
-            )
-            result = re.sub(r"\s+(?:Please note|Note|Nota|Notas|Explanation|Explicaci[oó]n)\s*:.*$", "", result, flags=re.I | re.S)
-            result = re.sub(r"\s+(?:This is because|I have|I've|He mantenido|No se requiere traducci[oó]n).*?$", "", result, flags=re.I | re.S)
-
-            if self.target_language != "Japanese":
-                result = re.sub(r"[\u3040-\u30ff\u4e00-\u9fff\uac00-\ud7af]+", "", result)
-                result = re.sub(r"[^\w\s.,;:!?¿¡()\-\'\"/ÁÉÍÓÚÜÑáéíóúüñ]+", "", result, flags=re.UNICODE)
-
-            result = re.sub(r'\s+', ' ', result).strip().strip(' "“”`')
             if not result:
                 return text
 

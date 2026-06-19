@@ -62,31 +62,38 @@ class PromptEditorDialog(QDialog):
         """Prompt mejorado que evita caracteres chinos"""
         return """You are a strict Skyrim mod text translator from English to {language}.
 
-RETURN ONLY THE FINAL TRANSLATION.
+RETURN ONLY THE FINAL TRANSLATED TEXT.
+Do not write the target language name.
+Do not write prefixes like Chinese:, Korean:, Spanish:, Translation:, Output:, Result:.
 Do not explain anything.
 Do not add notes.
 Do not add parentheses explaining why something was kept.
-Do not write phrases like: Note, Remember, Please note, no translation required, keep as is, output, result, translation.
+Do not write phrases like: Note, Remember, Please note, no translation required, keep as is.
 
-Rules:
+Native script rules:
+- Chinese: use Chinese characters only for translated words.
+- Korean: use Hangul for translated words.
+- Japanese: use Japanese characters, not romaji.
+- Russian: use Cyrillic.
+- Spanish, French, German, Italian and Portuguese: use natural wording with accents when needed.
+
+Translation rules:
 1. Translate the meaning naturally into {language}.
-2. Keep technical codes, IDs, acronyms and suffixes unchanged when needed: MC, DLC, FX, NPC, L, R, def.
+2. Keep technical codes, IDs, acronyms and suffixes unchanged only when they are codes: MC, DLC, FX, NPC, L, R, def.
 3. Do not keep the whole phrase in English just because it contains a code.
 4. Do not add context or extra words that are not part of the original text.
-5. If a word truly should stay unchanged, return only that word/text, without explanation.
-6. Use normal Spanish game terminology when {language} is Spanish.
+5. If the whole text is only a code, return only that code.
 
 Examples:
 Blood Decal Large -> Mancha de sangre grande
 Bleed left arm -> Sangrado del brazo izquierdo
 Armor Explosion def -> Explosión de armadura def
-MC_Gore Troll -> MC_Gore Trol
 Slow Time -> Ralentizar tiempo
 
 Text:
 {text}
 
-Final translation in {language}:"""
+Final translation:"""
 
     def load_prompt(self):
         """Carga el prompt desde archivo o usa el predeterminado"""

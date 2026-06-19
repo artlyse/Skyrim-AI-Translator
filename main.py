@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
     QInputDialog
 )
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction, QFont
+from PyQt6.QtGui import QAction, QFont, QIcon
 
 from languages import LANGUAGES, get_text
 from settings_dialog import SettingsDialog
@@ -45,6 +45,120 @@ CACHE_FILE = os.path.join(
     "translation_cache.json"
 )
 
+APP_NAME = "Skyrim AI Translator"
+APP_VERSION = "0.8.1"
+APP_BUILD = "v5 - Interfaz multidioma dinámica y autor actualizado"
+APP_AUTHOR = "Artlyse.dev"
+
+
+UI_LABELS = {
+    "Spanish": {
+        "btn_copy_original": "📋 Copiar original",
+        "btn_translate_selected": "▶️ Traducir seleccionados",
+        "btn_retranslate_selected": "♻️ Retraducir seleccionados",
+        "btn_translate_visible": "👁️ Traducir visibles",
+        "btn_translate_all": "🌐 Traducir todo",
+        "btn_export_dictionary": "📚 Exportar diccionario",
+        "menu_file": "📁 Archivo",
+        "menu_tools": "🧰 Herramientas",
+        "menu_ai": "🤖 Traducción IA",
+        "menu_help": "❔ Ayuda",
+        "open_txt": "📂 Abrir TXT / archivo de traducción",
+        "export_txt": "💾 Exportar TXT actual",
+        "load_autosave": "♻️ Cargar recuperación automática",
+        "save_project": "💾 Guardar proyecto",
+        "open_project": "📂 Abrir proyecto",
+        "autosave": "✅ Auto-guardado",
+        "exit": "🚪 Salir",
+        "load_dictionary": "📚 Cargar diccionario",
+        "apply_dictionary": "📌 Aplicar diccionario a la tabla",
+        "export_dictionary_menu": "📤 Exportar diccionario desde la tabla",
+        "export_xedit": "📥 Exportar para xEdit completo",
+        "clear_cache": "🗑️ Borrar caché de traducciones",
+        "rebuild_cache": "🔄 Reconstruir caché desde la tabla",
+        "retranslate_no_cache": "♻️ Retraducir seleccionados sin usar caché",
+        "same_text_translated": "⚙️ Considerar texto igual como traducido",
+        "copy_original_menu": "📋 Copiar original a traducción",
+        "ai_settings": "⚙️ Configurar idioma/modelo IA",
+        "ai_manager": "📦 Administrar modelos Ollama",
+        "prompt_editor": "📝 Editar prompt de traducción",
+        "retranslate_no_cache_short": "♻️ Retraducir seleccionados sin caché",
+        "about": "ℹ️ Acerca de",
+        "about_title": "Acerca de",
+        "about_functions": "Funciones principales",
+        "about_version": "Versión",
+        "about_build": "Compilación",
+        "about_author": "Autor/proyecto",
+        "about_recommendation": "Recomendación",
+        "about_recommendation_text": "usa temperatura baja entre 0.1 y 0.2 para traducciones más limpias.",
+    },
+    "English": {
+        "btn_copy_original": "📋 Copy original",
+        "btn_translate_selected": "▶️ Translate selected",
+        "btn_retranslate_selected": "♻️ Retranslate selected",
+        "btn_translate_visible": "👁️ Translate visible",
+        "btn_translate_all": "🌐 Translate all",
+        "btn_export_dictionary": "📚 Export dictionary",
+        "menu_file": "📁 File",
+        "menu_tools": "🧰 Tools",
+        "menu_ai": "🤖 AI Translation",
+        "menu_help": "❔ Help",
+        "open_txt": "📂 Open TXT / translation file",
+        "export_txt": "💾 Export current TXT",
+        "load_autosave": "♻️ Load auto-recovery",
+        "save_project": "💾 Save project",
+        "open_project": "📂 Open project",
+        "autosave": "✅ Auto-save",
+        "exit": "🚪 Exit",
+        "load_dictionary": "📚 Load dictionary",
+        "apply_dictionary": "📌 Apply dictionary to table",
+        "export_dictionary_menu": "📤 Export dictionary from table",
+        "export_xedit": "📥 Export full xEdit file",
+        "clear_cache": "🗑️ Clear translation cache",
+        "rebuild_cache": "🔄 Rebuild cache from table",
+        "retranslate_no_cache": "♻️ Retranslate selected without cache",
+        "same_text_translated": "⚙️ Treat identical text as translated",
+        "copy_original_menu": "📋 Copy original to translation",
+        "ai_settings": "⚙️ Configure language/AI model",
+        "ai_manager": "📦 Manage Ollama models",
+        "prompt_editor": "📝 Edit translation prompt",
+        "retranslate_no_cache_short": "♻️ Retranslate selected without cache",
+        "about": "ℹ️ About",
+        "about_title": "About",
+        "about_functions": "Main features",
+        "about_version": "Version",
+        "about_build": "Build",
+        "about_author": "Author/project",
+        "about_recommendation": "Recommendation",
+        "about_recommendation_text": "use a low temperature between 0.1 and 0.2 for cleaner translations.",
+    },
+    "Portuguese": {
+        "btn_copy_original": "📋 Copiar original", "btn_translate_selected": "▶️ Traduzir selecionados", "btn_retranslate_selected": "♻️ Retraduzir selecionados", "btn_translate_visible": "👁️ Traduzir visíveis", "btn_translate_all": "🌐 Traduzir tudo", "btn_export_dictionary": "📚 Exportar dicionário", "menu_file": "📁 Arquivo", "menu_tools": "🧰 Ferramentas", "menu_ai": "🤖 Tradução IA", "menu_help": "❔ Ajuda", "open_txt": "📂 Abrir TXT / arquivo de tradução", "export_txt": "💾 Exportar TXT atual", "load_autosave": "♻️ Carregar recuperação automática", "save_project": "💾 Salvar projeto", "open_project": "📂 Abrir projeto", "autosave": "✅ Salvamento automático", "exit": "🚪 Sair", "load_dictionary": "📚 Carregar dicionário", "apply_dictionary": "📌 Aplicar dicionário à tabela", "export_dictionary_menu": "📤 Exportar dicionário da tabela", "export_xedit": "📥 Exportar para xEdit completo", "clear_cache": "🗑️ Limpar cache de traduções", "rebuild_cache": "🔄 Reconstruir cache da tabela", "retranslate_no_cache": "♻️ Retraduzir selecionados sem cache", "same_text_translated": "⚙️ Considerar texto igual como traduzido", "copy_original_menu": "📋 Copiar original para tradução", "ai_settings": "⚙️ Configurar idioma/modelo IA", "ai_manager": "📦 Gerenciar modelos Ollama", "prompt_editor": "📝 Editar prompt de tradução", "retranslate_no_cache_short": "♻️ Retraduzir sem cache", "about": "ℹ️ Sobre", "about_title": "Sobre", "about_functions": "Funções principais", "about_version": "Versão", "about_build": "Compilação", "about_author": "Autor/projeto", "about_recommendation": "Recomendação", "about_recommendation_text": "use temperatura baixa entre 0.1 e 0.2 para traduções mais limpas."
+    },
+    "French": {
+        "btn_copy_original": "📋 Copier l’original", "btn_translate_selected": "▶️ Traduire la sélection", "btn_retranslate_selected": "♻️ Retraduire la sélection", "btn_translate_visible": "👁️ Traduire les visibles", "btn_translate_all": "🌐 Tout traduire", "btn_export_dictionary": "📚 Exporter le dictionnaire", "menu_file": "📁 Fichier", "menu_tools": "🧰 Outils", "menu_ai": "🤖 Traduction IA", "menu_help": "❔ Aide", "open_txt": "📂 Ouvrir TXT / fichier de traduction", "export_txt": "💾 Exporter le TXT actuel", "load_autosave": "♻️ Charger la récupération auto", "save_project": "💾 Enregistrer le projet", "open_project": "📂 Ouvrir le projet", "autosave": "✅ Sauvegarde automatique", "exit": "🚪 Quitter", "load_dictionary": "📚 Charger le dictionnaire", "apply_dictionary": "📌 Appliquer le dictionnaire", "export_dictionary_menu": "📤 Exporter le dictionnaire depuis la table", "export_xedit": "📥 Exporter pour xEdit complet", "clear_cache": "🗑️ Vider le cache", "rebuild_cache": "🔄 Reconstruire le cache", "retranslate_no_cache": "♻️ Retraduire sans cache", "same_text_translated": "⚙️ Texte identique = traduit", "copy_original_menu": "📋 Copier l’original vers traduction", "ai_settings": "⚙️ Configurer langue/modèle IA", "ai_manager": "📦 Gérer les modèles Ollama", "prompt_editor": "📝 Modifier le prompt", "retranslate_no_cache_short": "♻️ Retraduire sans cache", "about": "ℹ️ À propos", "about_title": "À propos", "about_functions": "Fonctions principales", "about_version": "Version", "about_build": "Build", "about_author": "Auteur/projet", "about_recommendation": "Recommandation", "about_recommendation_text": "utilisez une température basse entre 0.1 et 0.2 pour des traductions plus propres."
+    },
+    "German": {
+        "btn_copy_original": "📋 Original kopieren", "btn_translate_selected": "▶️ Auswahl übersetzen", "btn_retranslate_selected": "♻️ Auswahl neu übersetzen", "btn_translate_visible": "👁️ Sichtbare übersetzen", "btn_translate_all": "🌐 Alles übersetzen", "btn_export_dictionary": "📚 Wörterbuch exportieren", "menu_file": "📁 Datei", "menu_tools": "🧰 Werkzeuge", "menu_ai": "🤖 KI-Übersetzung", "menu_help": "❔ Hilfe", "open_txt": "📂 TXT / Übersetzungsdatei öffnen", "export_txt": "💾 Aktuelle TXT exportieren", "load_autosave": "♻️ Auto-Wiederherstellung laden", "save_project": "💾 Projekt speichern", "open_project": "📂 Projekt öffnen", "autosave": "✅ Automatisch speichern", "exit": "🚪 Beenden", "load_dictionary": "📚 Wörterbuch laden", "apply_dictionary": "📌 Wörterbuch anwenden", "export_dictionary_menu": "📤 Wörterbuch aus Tabelle exportieren", "export_xedit": "📥 Für xEdit exportieren", "clear_cache": "🗑️ Cache löschen", "rebuild_cache": "🔄 Cache aus Tabelle neu erstellen", "retranslate_no_cache": "♻️ Auswahl ohne Cache neu übersetzen", "same_text_translated": "⚙️ Gleicher Text gilt als übersetzt", "copy_original_menu": "📋 Original in Übersetzung kopieren", "ai_settings": "⚙️ Sprache/KI-Modell konfigurieren", "ai_manager": "📦 Ollama-Modelle verwalten", "prompt_editor": "📝 Prompt bearbeiten", "retranslate_no_cache_short": "♻️ Ohne Cache neu übersetzen", "about": "ℹ️ Über", "about_title": "Über", "about_functions": "Hauptfunktionen", "about_version": "Version", "about_build": "Build", "about_author": "Autor/Projekt", "about_recommendation": "Empfehlung", "about_recommendation_text": "verwende eine niedrige Temperatur zwischen 0.1 und 0.2 für sauberere Übersetzungen."
+    },
+    "Italian": {
+        "btn_copy_original": "📋 Copia originale", "btn_translate_selected": "▶️ Traduci selezionati", "btn_retranslate_selected": "♻️ Ritraduci selezionati", "btn_translate_visible": "👁️ Traduci visibili", "btn_translate_all": "🌐 Traduci tutto", "btn_export_dictionary": "📚 Esporta dizionario", "menu_file": "📁 File", "menu_tools": "🧰 Strumenti", "menu_ai": "🤖 Traduzione IA", "menu_help": "❔ Aiuto", "open_txt": "📂 Apri TXT / file traduzione", "export_txt": "💾 Esporta TXT attuale", "load_autosave": "♻️ Carica recupero automatico", "save_project": "💾 Salva progetto", "open_project": "📂 Apri progetto", "autosave": "✅ Salvataggio automatico", "exit": "🚪 Esci", "load_dictionary": "📚 Carica dizionario", "apply_dictionary": "📌 Applica dizionario", "export_dictionary_menu": "📤 Esporta dizionario dalla tabella", "export_xedit": "📥 Esporta per xEdit completo", "clear_cache": "🗑️ Svuota cache", "rebuild_cache": "🔄 Ricostruisci cache", "retranslate_no_cache": "♻️ Ritraduci senza cache", "same_text_translated": "⚙️ Testo uguale = tradotto", "copy_original_menu": "📋 Copia originale in traduzione", "ai_settings": "⚙️ Configura lingua/modello IA", "ai_manager": "📦 Gestisci modelli Ollama", "prompt_editor": "📝 Modifica prompt", "retranslate_no_cache_short": "♻️ Ritraduci senza cache", "about": "ℹ️ Informazioni", "about_title": "Informazioni", "about_functions": "Funzioni principali", "about_version": "Versione", "about_build": "Build", "about_author": "Autore/progetto", "about_recommendation": "Raccomandazione", "about_recommendation_text": "usa temperatura bassa tra 0.1 e 0.2 per traduzioni più pulite."
+    },
+    "Russian": {
+        "btn_copy_original": "📋 Скопировать оригинал", "btn_translate_selected": "▶️ Перевести выбранное", "btn_retranslate_selected": "♻️ Перевести заново", "btn_translate_visible": "👁️ Перевести видимые", "btn_translate_all": "🌐 Перевести всё", "btn_export_dictionary": "📚 Экспорт словаря", "menu_file": "📁 Файл", "menu_tools": "🧰 Инструменты", "menu_ai": "🤖 ИИ-перевод", "menu_help": "❔ Справка", "open_txt": "📂 Открыть TXT / файл перевода", "export_txt": "💾 Экспорт текущего TXT", "load_autosave": "♻️ Загрузить автовосстановление", "save_project": "💾 Сохранить проект", "open_project": "📂 Открыть проект", "autosave": "✅ Автосохранение", "exit": "🚪 Выход", "load_dictionary": "📚 Загрузить словарь", "apply_dictionary": "📌 Применить словарь", "export_dictionary_menu": "📤 Экспорт словаря из таблицы", "export_xedit": "📥 Экспорт для xEdit", "clear_cache": "🗑️ Очистить кэш", "rebuild_cache": "🔄 Пересобрать кэш", "retranslate_no_cache": "♻️ Перевести заново без кэша", "same_text_translated": "⚙️ Одинаковый текст считать переведённым", "copy_original_menu": "📋 Скопировать оригинал в перевод", "ai_settings": "⚙️ Настроить язык/модель ИИ", "ai_manager": "📦 Управлять моделями Ollama", "prompt_editor": "📝 Редактировать prompt", "retranslate_no_cache_short": "♻️ Перевести без кэша", "about": "ℹ️ О программе", "about_title": "О программе", "about_functions": "Основные функции", "about_version": "Версия", "about_build": "Сборка", "about_author": "Автор/проект", "about_recommendation": "Рекомендация", "about_recommendation_text": "используйте низкую температуру 0.1–0.2 для более чистого перевода."
+    },
+    "Japanese": {
+        "btn_copy_original": "📋 原文をコピー", "btn_translate_selected": "▶️ 選択を翻訳", "btn_retranslate_selected": "♻️ 選択を再翻訳", "btn_translate_visible": "👁️ 表示中を翻訳", "btn_translate_all": "🌐 すべて翻訳", "btn_export_dictionary": "📚 辞書をエクスポート", "menu_file": "📁 ファイル", "menu_tools": "🧰 ツール", "menu_ai": "🤖 AI翻訳", "menu_help": "❔ ヘルプ", "open_txt": "📂 TXT / 翻訳ファイルを開く", "export_txt": "💾 現在のTXTを出力", "load_autosave": "♻️ 自動復元を読み込む", "save_project": "💾 プロジェクト保存", "open_project": "📂 プロジェクトを開く", "autosave": "✅ 自動保存", "exit": "🚪 終了", "load_dictionary": "📚 辞書を読み込む", "apply_dictionary": "📌 辞書を適用", "export_dictionary_menu": "📤 テーブルから辞書を出力", "export_xedit": "📥 xEdit用に出力", "clear_cache": "🗑️ キャッシュ削除", "rebuild_cache": "🔄 キャッシュ再構築", "retranslate_no_cache": "♻️ キャッシュなしで再翻訳", "same_text_translated": "⚙️ 同じ文字列を翻訳済みにする", "copy_original_menu": "📋 原文を翻訳欄へコピー", "ai_settings": "⚙️ 言語/AIモデル設定", "ai_manager": "📦 Ollamaモデル管理", "prompt_editor": "📝 プロンプト編集", "retranslate_no_cache_short": "♻️ キャッシュなし再翻訳", "about": "ℹ️ このアプリについて", "about_title": "このアプリについて", "about_functions": "主な機能", "about_version": "バージョン", "about_build": "ビルド", "about_author": "作者/プロジェクト", "about_recommendation": "推奨", "about_recommendation_text": "きれいな翻訳には温度を0.1〜0.2に設定してください。"
+    },
+    "Chinese": {
+        "btn_copy_original": "📋 复制原文", "btn_translate_selected": "▶️ 翻译选中项", "btn_retranslate_selected": "♻️ 重新翻译选中项", "btn_translate_visible": "👁️ 翻译可见项", "btn_translate_all": "🌐 翻译全部", "btn_export_dictionary": "📚 导出词典", "menu_file": "📁 文件", "menu_tools": "🧰 工具", "menu_ai": "🤖 AI翻译", "menu_help": "❔ 帮助", "open_txt": "📂 打开TXT / 翻译文件", "export_txt": "💾 导出当前TXT", "load_autosave": "♻️ 加载自动恢复", "save_project": "💾 保存项目", "open_project": "📂 打开项目", "autosave": "✅ 自动保存", "exit": "🚪 退出", "load_dictionary": "📚 加载词典", "apply_dictionary": "📌 应用词典到表格", "export_dictionary_menu": "📤 从表格导出词典", "export_xedit": "📥 导出完整xEdit文件", "clear_cache": "🗑️ 清除翻译缓存", "rebuild_cache": "🔄 从表格重建缓存", "retranslate_no_cache": "♻️ 不使用缓存重新翻译", "same_text_translated": "⚙️ 相同文本视为已翻译", "copy_original_menu": "📋 将原文复制到翻译", "ai_settings": "⚙️ 配置语言/AI模型", "ai_manager": "📦 管理Ollama模型", "prompt_editor": "📝 编辑翻译提示词", "retranslate_no_cache_short": "♻️ 无缓存重新翻译", "about": "ℹ️ 关于", "about_title": "关于", "about_functions": "主要功能", "about_version": "版本", "about_build": "构建", "about_author": "作者/项目", "about_recommendation": "建议", "about_recommendation_text": "使用0.1到0.2的低温度以获得更干净的翻译。"
+    },
+    "Korean": {
+        "btn_copy_original": "📋 원문 복사", "btn_translate_selected": "▶️ 선택 항목 번역", "btn_retranslate_selected": "♻️ 선택 항목 재번역", "btn_translate_visible": "👁️ 보이는 항목 번역", "btn_translate_all": "🌐 모두 번역", "btn_export_dictionary": "📚 사전 내보내기", "menu_file": "📁 파일", "menu_tools": "🧰 도구", "menu_ai": "🤖 AI 번역", "menu_help": "❔ 도움말", "open_txt": "📂 TXT / 번역 파일 열기", "export_txt": "💾 현재 TXT 내보내기", "load_autosave": "♻️ 자동 복구 불러오기", "save_project": "💾 프로젝트 저장", "open_project": "📂 프로젝트 열기", "autosave": "✅ 자동 저장", "exit": "🚪 종료", "load_dictionary": "📚 사전 불러오기", "apply_dictionary": "📌 사전을 표에 적용", "export_dictionary_menu": "📤 표에서 사전 내보내기", "export_xedit": "📥 xEdit용 전체 내보내기", "clear_cache": "🗑️ 번역 캐시 삭제", "rebuild_cache": "🔄 표에서 캐시 재구성", "retranslate_no_cache": "♻️ 캐시 없이 선택 항목 재번역", "same_text_translated": "⚙️ 같은 텍스트를 번역됨으로 처리", "copy_original_menu": "📋 원문을 번역 칸에 복사", "ai_settings": "⚙️ 언어/AI 모델 설정", "ai_manager": "📦 Ollama 모델 관리", "prompt_editor": "📝 번역 프롬프트 편집", "retranslate_no_cache_short": "♻️ 캐시 없이 재번역", "about": "ℹ️ 정보", "about_title": "정보", "about_functions": "주요 기능", "about_version": "버전", "about_build": "빌드", "about_author": "작성자/프로젝트", "about_recommendation": "권장", "about_recommendation_text": "더 깔끔한 번역을 위해 온도를 0.1~0.2로 낮게 설정하세요."
+    }
+}
+
+
 
 class SkyrimTranslator(QMainWindow):
     def __init__(self):
@@ -55,8 +169,9 @@ class SkyrimTranslator(QMainWindow):
         self.ui_language = self.settings.get("ui_language", "Spanish")
         self.target_language = self.settings.get("target_language", "Spanish")
         
-        self.setWindowTitle(self.tr("window_title"))
+        self.setWindowTitle(f"{APP_NAME} {APP_VERSION}")
         self.resize(1400, 800)
+        self.apply_app_icon()
 
         # Aplicar personalizaciones
         self.apply_appearance_settings()
@@ -83,32 +198,43 @@ class SkyrimTranslator(QMainWindow):
         self.search_box.setPlaceholderText(self.tr("search_placeholder"))
         self.search_box.textChanged.connect(self.apply_filters)
 
-        # BOTONES PRINCIPALES (SOLO TRADUCCIONES)
-        btn_copy_original = QPushButton(self.tr("btn_copy_original"))
-        btn_translate_selected = QPushButton(self.tr("btn_translate_selected"))
-        btn_translate_visible = QPushButton(self.tr("btn_translate_visible"))
-        btn_translate_all = QPushButton(self.tr("btn_translate_all"))
-        
+        # BOTONES PRINCIPALES
+        self.btn_copy_original = QPushButton(self.ui_text("btn_copy_original"))
+        self.btn_translate_selected = QPushButton(self.ui_text("btn_translate_selected"))
+        self.btn_retranslate_selected = QPushButton(self.ui_text("btn_retranslate_selected"))
+        self.btn_translate_visible = QPushButton(self.ui_text("btn_translate_visible"))
+        self.btn_translate_all = QPushButton(self.ui_text("btn_translate_all"))
+        self.btn_export_dictionary = QPushButton(self.ui_text("btn_export_dictionary"))
+
+        for btn in [self.btn_translate_selected, self.btn_retranslate_selected, self.btn_translate_visible, self.btn_translate_all]:
+            btn.setObjectName("primaryAction")
+        self.btn_copy_original.setObjectName("secondaryAction")
+        self.btn_export_dictionary.setObjectName("secondaryAction")
+
         # BOTONES FILTRO
-        btn_all = QPushButton(self.tr("btn_all"))
-        btn_pending = QPushButton(self.tr("btn_pending"))
-        btn_translated = QPushButton(self.tr("btn_translated"))
+        self.btn_all = QPushButton(self.tr("btn_all"))
+        self.btn_pending = QPushButton(self.tr("btn_pending"))
+        self.btn_translated = QPushButton(self.tr("btn_translated"))
 
         # EVENTOS
-        btn_copy_original.clicked.connect(self.copy_original_to_translation)
-        btn_translate_selected.clicked.connect(self.translate_selected_ai)
-        btn_translate_visible.clicked.connect(self.translate_visible_ai)
-        btn_translate_all.clicked.connect(self.translate_all_ai)
-        btn_all.clicked.connect(self.show_all)
-        btn_pending.clicked.connect(self.show_pending)
-        btn_translated.clicked.connect(self.show_translated)
+        self.btn_copy_original.clicked.connect(self.copy_original_to_translation)
+        self.btn_translate_selected.clicked.connect(self.translate_selected_ai)
+        self.btn_retranslate_selected.clicked.connect(self.retranslate_selected_ai)
+        self.btn_translate_visible.clicked.connect(self.translate_visible_ai)
+        self.btn_translate_all.clicked.connect(self.translate_all_ai)
+        self.btn_export_dictionary.clicked.connect(self.export_dictionary)
+        self.btn_all.clicked.connect(self.show_all)
+        self.btn_pending.clicked.connect(self.show_pending)
+        self.btn_translated.clicked.connect(self.show_translated)
 
         # LAYOUT BOTONES PRINCIPALES
         buttons_layout = QHBoxLayout()
-        buttons_layout.addWidget(btn_copy_original)
-        buttons_layout.addWidget(btn_translate_selected)
-        buttons_layout.addWidget(btn_translate_visible)
-        buttons_layout.addWidget(btn_translate_all)
+        buttons_layout.addWidget(self.btn_copy_original)
+        buttons_layout.addWidget(self.btn_translate_selected)
+        buttons_layout.addWidget(self.btn_retranslate_selected)
+        buttons_layout.addWidget(self.btn_translate_visible)
+        buttons_layout.addWidget(self.btn_translate_all)
+        buttons_layout.addWidget(self.btn_export_dictionary)
 
         # LAYOUT ESTADÍSTICAS
         stats_layout = QHBoxLayout()
@@ -118,9 +244,9 @@ class SkyrimTranslator(QMainWindow):
 
         # LAYOUT FILTROS
         filter_buttons = QHBoxLayout()
-        filter_buttons.addWidget(btn_all)
-        filter_buttons.addWidget(btn_pending)
-        filter_buttons.addWidget(btn_translated)
+        filter_buttons.addWidget(self.btn_all)
+        filter_buttons.addWidget(self.btn_pending)
+        filter_buttons.addWidget(self.btn_translated)
 
         # BARRA DE PROGRESO Y BOTÓN CANCELAR
         self.progress_bar = QProgressBar()
@@ -158,138 +284,156 @@ class SkyrimTranslator(QMainWindow):
 
         self.table.itemChanged.connect(self.on_translation_changed)
 
+
+    def apply_app_icon(self):
+        """Aplica un logo simple para la app si existe en assets/app_logo.png."""
+        icon_path = os.path.join("assets", "app_logo.png")
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+
     def tr(self, key, **kwargs):
         """Traduce un texto según el idioma UI actual"""
         return get_text(key, self.ui_language, **kwargs)
 
+    def ui_text(self, key):
+        """Texto propio de botones/menús. Usa español como respaldo."""
+        lang = getattr(self, "ui_language", "Spanish")
+        return UI_LABELS.get(lang, UI_LABELS["Spanish"]).get(key, UI_LABELS["Spanish"].get(key, key))
+
     def create_menu_bar(self):
-        """Crea la barra de menú completa"""
+        """Crea la barra de menú completa según el idioma actual."""
         menubar = self.menuBar()
+        menubar.clear()
 
         # ===== MENÚ ARCHIVO =====
-        self.archivo_menu = menubar.addMenu(self.tr("menu_file"))
-        
-        action_open_txt = QAction("📂 Abrir TXT de xEdit", self)
-        action_open_txt.triggered.connect(self.open_file)
-        self.archivo_menu.addAction(action_open_txt)
-        
+        self.archivo_menu = menubar.addMenu(self.ui_text("menu_file"))
+
+        self.action_open_txt = QAction(self.ui_text("open_txt"), self)
+        self.action_open_txt.triggered.connect(self.open_file)
+        self.archivo_menu.addAction(self.action_open_txt)
+
         self.archivo_menu.addSeparator()
-        
-        action_export = QAction(self.tr("menu_export"), self)
-        action_export.triggered.connect(self.export_file)
-        self.archivo_menu.addAction(action_export)
-        
+
+        self.action_export = QAction(self.ui_text("export_txt"), self)
+        self.action_export.triggered.connect(self.export_file)
+        self.archivo_menu.addAction(self.action_export)
+
         self.archivo_menu.addSeparator()
-        
-        # Cargar auto-save manualmente
-        action_load_auto_save = QAction("📂 Cargar auto-save", self)
-        action_load_auto_save.triggered.connect(self.load_auto_save)
-        self.archivo_menu.addAction(action_load_auto_save)
-        
-        action_save_project = QAction(self.tr("menu_save_project"), self)
-        action_save_project.triggered.connect(self.save_project)
-        self.archivo_menu.addAction(action_save_project)
-        
-        action_open_project = QAction(self.tr("menu_open_project"), self)
-        action_open_project.triggered.connect(self.open_project)
-        self.archivo_menu.addAction(action_open_project)
-        
+
+        self.action_load_auto_save = QAction(self.ui_text("load_autosave"), self)
+        self.action_load_auto_save.triggered.connect(self.load_auto_save)
+        self.archivo_menu.addAction(self.action_load_auto_save)
+
+        self.action_save_project = QAction(self.ui_text("save_project"), self)
+        self.action_save_project.triggered.connect(self.save_project)
+        self.archivo_menu.addAction(self.action_save_project)
+
+        self.action_open_project = QAction(self.ui_text("open_project"), self)
+        self.action_open_project.triggered.connect(self.open_project)
+        self.archivo_menu.addAction(self.action_open_project)
+
         self.archivo_menu.addSeparator()
-        
-        action_auto_save = QAction(self.tr("menu_auto_save"), self)
-        action_auto_save.setCheckable(True)
-        action_auto_save.setChecked(self.settings.get("auto_save", True))
-        action_auto_save.triggered.connect(self.toggle_auto_save)
-        self.archivo_menu.addAction(action_auto_save)
-        
+
+        self.action_auto_save = QAction(self.ui_text("autosave"), self)
+        self.action_auto_save.setCheckable(True)
+        self.action_auto_save.setChecked(self.settings.get("auto_save", True))
+        self.action_auto_save.triggered.connect(self.toggle_auto_save)
+        self.archivo_menu.addAction(self.action_auto_save)
+
         self.archivo_menu.addSeparator()
-        
-        action_exit = QAction(self.tr("menu_exit"), self)
-        action_exit.triggered.connect(self.close)
-        self.archivo_menu.addAction(action_exit)
+
+        self.action_exit = QAction(self.ui_text("exit"), self)
+        self.action_exit.triggered.connect(self.close)
+        self.archivo_menu.addAction(self.action_exit)
 
         # ===== MENÚ HERRAMIENTAS =====
-        self.herramientas_menu = menubar.addMenu(self.tr("menu_tools"))
-        
-        action_load_dictionary = QAction(self.tr("menu_load_dictionary"), self)
-        action_load_dictionary.triggered.connect(self.load_dictionary)
-        self.herramientas_menu.addAction(action_load_dictionary)
-        
-        action_apply_dictionary = QAction(self.tr("menu_apply_dictionary"), self)
-        action_apply_dictionary.triggered.connect(self.apply_dictionary)
-        self.herramientas_menu.addAction(action_apply_dictionary)
-        
-        self.herramientas_menu.addSeparator()
-        
-        # Exportar traducciones para xEdit (formato completo)
-        action_export_xedit = QAction("📥 Exportar traducciones para xEdit (completo)", self)
-        action_export_xedit.triggered.connect(self.export_to_xedit_complete)
-        self.herramientas_menu.addAction(action_export_xedit)
-        
-        self.herramientas_menu.addSeparator()
-        
-        action_clear_cache = QAction("🗑️ Limpiar caché de traducciones", self)
-        action_clear_cache.triggered.connect(self.clear_cache)
-        self.herramientas_menu.addAction(action_clear_cache)
-        
-        # NUEVO: Reconstruir caché
-        action_rebuild_cache = QAction("🔄 Reconstruir caché (traducciones consistentes)", self)
-        action_rebuild_cache.triggered.connect(self.rebuild_cache)
-        self.herramientas_menu.addAction(action_rebuild_cache)
+        self.herramientas_menu = menubar.addMenu(self.ui_text("menu_tools"))
 
-        action_retranslate_selected = QAction("♻️ Retraducir seleccionados (ignorar caché)", self)
-        action_retranslate_selected.triggered.connect(self.retranslate_selected_ai)
-        self.herramientas_menu.addAction(action_retranslate_selected)
+        self.action_load_dictionary = QAction(self.ui_text("load_dictionary"), self)
+        self.action_load_dictionary.triggered.connect(self.load_dictionary)
+        self.herramientas_menu.addAction(self.action_load_dictionary)
 
-        self.action_same_text_translated = QAction("✅ Texto igual cuenta como traducido", self)
+        self.action_apply_dictionary = QAction(self.ui_text("apply_dictionary"), self)
+        self.action_apply_dictionary.triggered.connect(self.apply_dictionary)
+        self.herramientas_menu.addAction(self.action_apply_dictionary)
+
+        self.action_export_dictionary = QAction(self.ui_text("export_dictionary_menu"), self)
+        self.action_export_dictionary.triggered.connect(self.export_dictionary)
+        self.herramientas_menu.addAction(self.action_export_dictionary)
+
+        self.herramientas_menu.addSeparator()
+
+        self.action_export_xedit = QAction(self.ui_text("export_xedit"), self)
+        self.action_export_xedit.triggered.connect(self.export_to_xedit_complete)
+        self.herramientas_menu.addAction(self.action_export_xedit)
+
+        self.herramientas_menu.addSeparator()
+
+        self.action_clear_cache = QAction(self.ui_text("clear_cache"), self)
+        self.action_clear_cache.triggered.connect(self.clear_cache)
+        self.herramientas_menu.addAction(self.action_clear_cache)
+
+        self.action_rebuild_cache = QAction(self.ui_text("rebuild_cache"), self)
+        self.action_rebuild_cache.triggered.connect(self.rebuild_cache)
+        self.herramientas_menu.addAction(self.action_rebuild_cache)
+
+        self.action_retranslate_selected = QAction(self.ui_text("retranslate_no_cache"), self)
+        self.action_retranslate_selected.triggered.connect(self.retranslate_selected_ai)
+        self.herramientas_menu.addAction(self.action_retranslate_selected)
+
+        self.action_same_text_translated = QAction(self.ui_text("same_text_translated"), self)
         self.action_same_text_translated.setCheckable(True)
         self.action_same_text_translated.setChecked(self.settings.get("same_text_is_translated", False))
         self.action_same_text_translated.triggered.connect(self.toggle_same_text_translated)
         self.herramientas_menu.addAction(self.action_same_text_translated)
-        
+
         self.herramientas_menu.addSeparator()
-        
-        action_copy_original = QAction(self.tr("menu_copy_original"), self)
-        action_copy_original.triggered.connect(self.copy_original_to_translation)
-        self.herramientas_menu.addAction(action_copy_original)
+
+        self.action_copy_original = QAction(self.ui_text("copy_original_menu"), self)
+        self.action_copy_original.triggered.connect(self.copy_original_to_translation)
+        self.herramientas_menu.addAction(self.action_copy_original)
 
         # ===== MENÚ IA =====
-        self.ia_menu = menubar.addMenu(self.tr("menu_ai"))
-        
-        action_ai_settings = QAction(self.tr("menu_ai_settings"), self)
-        action_ai_settings.triggered.connect(self.open_ai_settings)
-        self.ia_menu.addAction(action_ai_settings)
-        
-        action_ai_manager = QAction(self.tr("menu_ai_manager"), self)
-        action_ai_manager.triggered.connect(self.open_ai_manager)
-        self.ia_menu.addAction(action_ai_manager)
-        
+        self.ia_menu = menubar.addMenu(self.ui_text("menu_ai"))
+
+        self.action_ai_settings = QAction(self.ui_text("ai_settings"), self)
+        self.action_ai_settings.triggered.connect(self.open_ai_settings)
+        self.ia_menu.addAction(self.action_ai_settings)
+
+        self.action_ai_manager = QAction(self.ui_text("ai_manager"), self)
+        self.action_ai_manager.triggered.connect(self.open_ai_manager)
+        self.ia_menu.addAction(self.action_ai_manager)
+
         self.ia_menu.addSeparator()
-        
-        action_prompt_editor = QAction(self.tr("menu_prompt_editor"), self)
-        action_prompt_editor.triggered.connect(self.open_prompt_editor)
-        self.ia_menu.addAction(action_prompt_editor)
-        
+
+        self.action_prompt_editor = QAction(self.ui_text("prompt_editor"), self)
+        self.action_prompt_editor.triggered.connect(self.open_prompt_editor)
+        self.ia_menu.addAction(self.action_prompt_editor)
+
         self.ia_menu.addSeparator()
-        
-        action_translate_selected = QAction(self.tr("menu_translate_selected"), self)
-        action_translate_selected.triggered.connect(self.translate_selected_ai)
-        self.ia_menu.addAction(action_translate_selected)
-        
-        action_translate_visible = QAction(self.tr("menu_translate_visible"), self)
-        action_translate_visible.triggered.connect(self.translate_visible_ai)
-        self.ia_menu.addAction(action_translate_visible)
-        
-        action_translate_all = QAction(self.tr("menu_translate_all"), self)
-        action_translate_all.triggered.connect(self.translate_all_ai)
-        self.ia_menu.addAction(action_translate_all)
+
+        self.action_translate_selected = QAction(self.ui_text("btn_translate_selected"), self)
+        self.action_translate_selected.triggered.connect(self.translate_selected_ai)
+        self.ia_menu.addAction(self.action_translate_selected)
+
+        self.action_retranslate_selected_ai = QAction(self.ui_text("retranslate_no_cache_short"), self)
+        self.action_retranslate_selected_ai.triggered.connect(self.retranslate_selected_ai)
+        self.ia_menu.addAction(self.action_retranslate_selected_ai)
+
+        self.action_translate_visible = QAction(self.ui_text("btn_translate_visible"), self)
+        self.action_translate_visible.triggered.connect(self.translate_visible_ai)
+        self.ia_menu.addAction(self.action_translate_visible)
+
+        self.action_translate_all = QAction(self.ui_text("btn_translate_all"), self)
+        self.action_translate_all.triggered.connect(self.translate_all_ai)
+        self.ia_menu.addAction(self.action_translate_all)
 
         # ===== MENÚ AYUDA =====
-        self.ayuda_menu = menubar.addMenu(self.tr("menu_help"))
-        
-        action_about = QAction(self.tr("menu_about"), self)
-        action_about.triggered.connect(self.show_about)
-        self.ayuda_menu.addAction(action_about)
+        self.ayuda_menu = menubar.addMenu(self.ui_text("menu_help"))
+
+        self.action_about = QAction(self.ui_text("about"), self)
+        self.action_about.triggered.connect(self.show_about)
+        self.ayuda_menu.addAction(self.action_about)
 
     def load_settings(self):
         settings_path = os.path.join("config", "settings.json")
@@ -303,7 +447,8 @@ class SkyrimTranslator(QMainWindow):
                 "font_size": 13,
                 "auto_save": True,
                 "confirm_exit": True,
-                "show_tooltips": True
+                "show_tooltips": True,
+                "same_text_is_translated": False
             }
         
         try:
@@ -318,7 +463,8 @@ class SkyrimTranslator(QMainWindow):
                 "font_size": 13,
                 "auto_save": True,
                 "confirm_exit": True,
-                "show_tooltips": True
+                "show_tooltips": True,
+                "same_text_is_translated": False
             }
 
     def save_settings(self):
@@ -353,94 +499,136 @@ class SkyrimTranslator(QMainWindow):
     def apply_dark_theme(self):
         self.setStyleSheet("""
             QMainWindow {
-                background-color: #1e1e1e;
+                background-color: #0f1117;
             }
             QWidget {
-                background-color: #1e1e1e;
-                color: #e6e6e6;
+                background-color: #0f1117;
+                color: #e8edf5;
+                font-family: Segoe UI, Arial;
             }
             QMenuBar {
-                background-color: #2d2d30;
-                color: #e6e6e6;
+                background-color: #171b24;
+                color: #e8edf5;
+                border-bottom: 1px solid #2a3040;
             }
             QMenuBar::item {
-                background-color: #2d2d30;
-                color: #e6e6e6;
-                padding: 6px 12px;
+                background-color: transparent;
+                color: #e8edf5;
+                padding: 8px 14px;
+                border-radius: 6px;
             }
             QMenuBar::item:selected {
-                background-color: #3e3e42;
+                background-color: #273044;
             }
             QMenu {
-                background-color: #2d2d30;
-                color: #e6e6e6;
-                border: 1px solid #3e3e42;
+                background-color: #171b24;
+                color: #e8edf5;
+                border: 1px solid #2f374a;
+                padding: 6px;
+            }
+            QMenu::item {
+                padding: 8px 24px;
+                border-radius: 5px;
             }
             QMenu::item:selected {
-                background-color: #094771;
+                background-color: #2f6fed;
+                color: white;
             }
             QPushButton {
-                background-color: #2d2d30;
-                color: white;
-                border: 1px solid #3e3e42;
-                padding: 8px;
-                border-radius: 5px;
+                background-color: #222938;
+                color: #f7f9fc;
+                border: 1px solid #344057;
+                padding: 9px 12px;
+                border-radius: 8px;
+                font-weight: 600;
             }
             QPushButton:hover {
-                background-color: #3e3e42;
+                background-color: #2c3548;
+                border-color: #4f8cff;
+            }
+            QPushButton:pressed {
+                background-color: #1c2330;
+            }
+            QPushButton#primaryAction {
+                background-color: #2f6fed;
+                border: 1px solid #5b8cff;
+                color: white;
+            }
+            QPushButton#primaryAction:hover {
+                background-color: #3f7cff;
+            }
+            QPushButton#secondaryAction {
+                background-color: #1b2130;
+                color: #dce6f7;
             }
             QPushButton:disabled {
-                background-color: #1e1e1e;
-                color: #666;
+                background-color: #171b24;
+                color: #6b7280;
+                border-color: #252b38;
             }
             QLineEdit {
-                background-color: #252526;
-                color: white;
-                border: 1px solid #3e3e42;
-                padding: 7px;
-                border-radius: 5px;
+                background-color: #171b24;
+                color: #f7f9fc;
+                border: 1px solid #344057;
+                padding: 9px;
+                border-radius: 8px;
+                selection-background-color: #2f6fed;
+            }
+            QLineEdit:focus {
+                border-color: #5b8cff;
             }
             QTableWidget {
-                background-color: #252526;
-                color: #e6e6e6;
-                gridline-color: #3e3e42;
-                selection-background-color: #094771;
+                background-color: #151923;
+                alternate-background-color: #10141d;
+                color: #e8edf5;
+                gridline-color: #2a3040;
+                selection-background-color: #284f9e;
+                selection-color: white;
+                border: 1px solid #2a3040;
+                border-radius: 8px;
             }
             QHeaderView::section {
-                background-color: #2d2d30;
-                color: white;
-                padding: 6px;
-                border: 1px solid #3e3e42;
+                background-color: #20283a;
+                color: #ffffff;
+                padding: 8px;
+                border: none;
+                border-right: 1px solid #313a50;
+                font-weight: 700;
             }
             QLabel {
-                color: #e6e6e6;
+                color: #dce6f7;
+                padding: 2px;
             }
             QProgressBar {
-                background-color: #252526;
-                border: 1px solid #3e3e42;
-                border-radius: 5px;
+                background-color: #171b24;
+                border: 1px solid #344057;
+                border-radius: 8px;
                 text-align: center;
                 color: white;
+                height: 18px;
             }
             QProgressBar::chunk {
-                background-color: #094771;
-                border-radius: 5px;
+                background-color: #2f6fed;
+                border-radius: 7px;
             }
             QTabWidget::pane {
-                background-color: #1e1e1e;
-                border: 1px solid #3e3e42;
+                background-color: #0f1117;
+                border: 1px solid #2a3040;
             }
             QTabBar::tab {
-                background-color: #2d2d30;
-                color: #e6e6e6;
-                padding: 8px 12px;
-                border: 1px solid #3e3e42;
+                background-color: #171b24;
+                color: #dce6f7;
+                padding: 9px 14px;
+                border: 1px solid #2a3040;
+                border-top-left-radius: 7px;
+                border-top-right-radius: 7px;
             }
             QTabBar::tab:selected {
-                background-color: #094771;
+                background-color: #2f6fed;
+                color: white;
             }
         """)
-    
+
     def apply_light_theme(self):
         self.setStyleSheet("""
             QMainWindow {
@@ -771,19 +959,30 @@ class SkyrimTranslator(QMainWindow):
         self.apply_filters()
 
     def update_ui_texts(self):
-        """Actualiza todos los textos de la interfaz cuando cambia el idioma"""
-        self.setWindowTitle(self.tr("window_title"))
-        self.label_info.setText(self.tr("no_file_loaded"))
-        self.lbl_total.setText(self.tr("total").format(self.table.rowCount()))
-        self.lbl_translated.setText(self.tr("translated").format(0))
-        self.lbl_pending.setText(self.tr("pending").format(0))
+        """Actualiza textos visibles cuando cambia el idioma de interfaz."""
+        self.setWindowTitle(f"{APP_NAME} {APP_VERSION}")
+
+        # Botones principales
+        self.btn_copy_original.setText(self.ui_text("btn_copy_original"))
+        self.btn_translate_selected.setText(self.ui_text("btn_translate_selected"))
+        self.btn_retranslate_selected.setText(self.ui_text("btn_retranslate_selected"))
+        self.btn_translate_visible.setText(self.ui_text("btn_translate_visible"))
+        self.btn_translate_all.setText(self.ui_text("btn_translate_all"))
+        self.btn_export_dictionary.setText(self.ui_text("btn_export_dictionary"))
+        self.btn_cancel_translation.setText(self.tr("btn_cancel"))
+
+        # Filtros
+        self.btn_all.setText(self.tr("btn_all"))
+        self.btn_pending.setText(self.tr("btn_pending"))
+        self.btn_translated.setText(self.tr("btn_translated"))
+
+        if self.table.rowCount() == 0:
+            self.label_info.setText(self.tr("no_file_loaded"))
         self.search_box.setPlaceholderText(self.tr("search_placeholder"))
-        
-        self.archivo_menu.setTitle(self.tr("menu_file"))
-        self.herramientas_menu.setTitle(self.tr("menu_tools"))
-        self.ia_menu.setTitle(self.tr("menu_ai"))
-        self.ayuda_menu.setTitle(self.tr("menu_help"))
-        
+
+        # Recrear menús para que todas las acciones cambien de idioma.
+        self.create_menu_bar()
+
         self.table.setHorizontalHeaderLabels([
             self.tr("col_formid"),
             self.tr("col_edid"),
@@ -791,8 +990,9 @@ class SkyrimTranslator(QMainWindow):
             self.tr("col_translation"),
             self.tr("col_status")
         ])
-        
-        self.update_stats()
+
+        # Recalcular estados para mostrar Pendiente/Traducido en el nuevo idioma.
+        self.refresh_all_statuses()
 
     def open_ai_settings(self):
         dialog = SettingsDialog(self)
@@ -817,11 +1017,26 @@ class SkyrimTranslator(QMainWindow):
         dialog.exec()
 
     def show_about(self):
-        QMessageBox.about(
-            self,
-            self.tr("msg_about_title"),
-            self.tr("msg_about_text")
-        )
+        about_text = f"""
+        <h2>{APP_NAME}</h2>
+        <p><b>{self.ui_text("about_version")}:</b> {APP_VERSION}</p>
+        <p><b>{self.ui_text("about_build")}:</b> {APP_BUILD}</p>
+        <p><b>{self.ui_text("about_author")}:</b> {APP_AUTHOR}</p>
+        <hr>
+        <p><b>{self.ui_text("about_functions")}:</b></p>
+        <ul>
+            <li>Traducción IA multidioma con Ollama o proveedor mock.</li>
+            <li>Caché por idioma para acelerar traducciones repetidas.</li>
+            <li>Retraducción forzada sin usar caché.</li>
+            <li>Limpieza de explicaciones no deseadas generadas por IA.</li>
+            <li>Estados dinámicos: Pendiente / Traducido.</li>
+            <li>Importación/exportación TXT para xEdit.</li>
+            <li>Exportación de diccionario JSON desde traducciones válidas.</li>
+            <li>Interfaz multidioma actualizable desde configuración.</li>
+        </ul>
+        <p><b>{self.ui_text("about_recommendation")}:</b> {self.ui_text("about_recommendation_text")}</p>
+        """
+        QMessageBox.about(self, f"{self.ui_text('about_title')} {APP_NAME}", about_text)
 
     def load_ai_settings(self):
         path = os.path.join("config", "settings.json")
@@ -1286,6 +1501,8 @@ class SkyrimTranslator(QMainWindow):
             self.tr("col_status")
         ])
         self.table.setRowCount(len(rows))
+        self.table.setAlternatingRowColors(True)
+        self.table.setSortingEnabled(False)
         
         self._row_data = {}
 
@@ -1308,6 +1525,7 @@ class SkyrimTranslator(QMainWindow):
             }
 
         self.table.resizeColumnsToContents()
+        self.table.setSortingEnabled(False)
         self.table.blockSignals(False)
         self.update_stats()
         self.apply_filters()
@@ -1404,7 +1622,8 @@ class SkyrimTranslator(QMainWindow):
         for row in rows:
             original = self.safe_text(row, 2)
             self.table.setItem(row, 3, QTableWidgetItem(original))
-            self.refresh_row_status(row)
+            # Copiar el original significa que todavía no hay traducción real.
+            self.table.setItem(row, 4, QTableWidgetItem(self.tr("status_pending")))
         self.table.blockSignals(False)
         self.update_stats()
         self.apply_filters()
@@ -1531,7 +1750,7 @@ class SkyrimTranslator(QMainWindow):
             return
 
         try:
-            data = {"app": "Skyrim AI Translator", "version": "0.6", "records": []}
+            data = {"app": APP_NAME, "version": APP_VERSION, "build": APP_BUILD, "records": []}
             for row in range(self.table.rowCount()):
                 record = {
                     "formid": self.safe_text(row, 0),
@@ -1566,6 +1785,55 @@ class SkyrimTranslator(QMainWindow):
             QMessageBox.information(self, self.tr("Diccionario"), self.tr("msg_dictionary_loaded").format(len(self.dictionary)))
         except Exception as e:
             QMessageBox.critical(self, self.tr("error_dictionary"), str(e))
+
+
+    def export_dictionary(self):
+        """Exporta un diccionario JSON usando las filas realmente traducidas."""
+        if self.table.rowCount() == 0:
+            QMessageBox.warning(self, self.tr("msg_warning"), self.tr("msg_no_file"))
+            return
+
+        dictionary_data = {}
+        skipped = 0
+
+        for row in range(self.table.rowCount()):
+            original = self.safe_text(row, 2)
+            translated = self.clean_ai_explanation_text(self.safe_text(row, 3))
+            if not original or not translated or translated == original:
+                skipped += 1
+                continue
+            dictionary_data[original] = translated
+
+        if not dictionary_data:
+            QMessageBox.warning(
+                self,
+                "Diccionario vacío",
+                "No hay traducciones reales para exportar. Las filas pendientes o iguales al original no se incluyen."
+            )
+            return
+
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Exportar diccionario",
+            f"diccionario_{self.target_language.lower()}.json",
+            "JSON Files (*.json);;All Files (*)"
+        )
+        if not path:
+            return
+
+        try:
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(dictionary_data, f, ensure_ascii=False, indent=4)
+
+            QMessageBox.information(
+                self,
+                "Diccionario exportado",
+                f"✅ Diccionario exportado correctamente.\n\n"
+                f"Entradas guardadas: {len(dictionary_data)}\n"
+                f"Filas omitidas: {skipped}"
+            )
+        except Exception as e:
+            QMessageBox.critical(self, "Error exportando diccionario", str(e))
 
     def apply_dictionary(self):
         if not self.dictionary:

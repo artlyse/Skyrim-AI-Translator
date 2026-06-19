@@ -51,6 +51,27 @@ class TranslationWorker(QObject, threading.Thread):
             return True
         return False
 
+
+    def strip_language_prefixes(self, text):
+        """Quita prefijos que algunos modelos añaden: Chinese:, Korean:, Español:, etc."""
+        language_words = [
+            'Spanish', 'Español', 'Espanol', 'English', 'Inglés', 'Ingles',
+            'French', 'Francés', 'Frances', 'German', 'Alemán', 'Aleman',
+            'Italian', 'Italiano', 'Portuguese', 'Portugués', 'Portugues',
+            'Russian', 'Ruso', 'Japanese', 'Japonés', 'Japones',
+            'Chinese', 'Chino', 'Korean', 'Coreano',
+            self.target_language
+        ]
+        words = sorted(set(w for w in language_words if w), key=len, reverse=True)
+        for _ in range(3):
+            before = text
+            for word in words:
+                text = re.sub(r'^\s*' + re.escape(word) + r'\s*(?:translation|traducci[oó]n)?\s*[:：\-–—]+\s*', '', text, flags=re.I).strip()
+                text = re.sub(r'^\s*(?:translation|traducci[oó]n|output|result|resultado|response|respuesta)\s*(?:in|en)?\s*' + re.escape(word) + r'\s*[:：\-–—]+\s*', '', text, flags=re.I).strip()
+            if text == before:
+                break
+        return text
+
     def clean_translation(self, text, original):
         if not text:
             return original
@@ -58,12 +79,14 @@ class TranslationWorker(QObject, threading.Thread):
         text = str(text).replace('\ufeff', '').strip()
         text = re.sub(r'```.*?```', '', text, flags=re.S)
         text = re.sub(r'^["“”\'`]+|["“”\'`]+$', '', text).strip()
+        text = self.strip_language_prefixes(text)
 
         markers = [
             r'Translation\s*\([^)]*\)\s*:', r'Translation\s*:', r'Traducci[oó]n\s*\([^)]*\)\s*:',
             r'Traducci[oó]n\s*:', r'Resultado\s*:', r'Result\s*:', r'Output\s*:',
-            r'Salida\s*:', r'Response\s*:', r'Respuesta\s*(?:en\s+espa[nñ]ol)?\s*:',
-            r'Correct translation\s*\([^)]*\)\s*:', r'Correction in Spanish\s*:'
+            r'Salida\s*:', r'Response\s*:', r'Respuesta\s*(?:en\s+[^:]+)?\s*:',
+            r'Correct translation\s*\([^)]*\)\s*:', r'Correction in [A-Za-zÁÉÍÓÚáéíóúñÑ]+\s*:',
+            r'(?:Chinese|Korean|Japanese|Russian|Spanish|French|German|Italian|Portuguese)\s*[:：]+'
         ]
         for marker in markers:
             matches = list(re.finditer(marker, text, flags=re.I))
@@ -90,9 +113,9 @@ class TranslationWorker(QObject, threading.Thread):
                 text = re.sub(pat, '', text, flags=re.I | re.S).strip()
             changed = before != text
 
-        if self.target_language != 'Japanese':
-            text = re.sub(r'[\u3040-\u30ff\u4e00-\u9fff\uac00-\ud7af]+', '', text)
-            text = re.sub(r'[^\w\s.,;:!?¿¡()\-\'"/ÁÉÍÓÚÜÑáéíóúüñ]+', '', text, flags=re.UNICODE)
+        # Mantener todos los alfabetos soportados: chino, coreano, japonés, ruso, etc.
+        # Solo quitamos caracteres de control y símbolos raros invisibles.
+        text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]+', '', text)
 
         text = re.sub(r'\s+', ' ', text).strip()
         text = re.sub(r'\s+([.,;:!?])', r'\1', text).strip()

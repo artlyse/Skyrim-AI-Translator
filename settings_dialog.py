@@ -58,7 +58,8 @@ DEFAULT_SETTINGS = {
     "font_size": 13,
     "auto_save": True,
     "confirm_exit": True,
-    "show_tooltips": True
+    "show_tooltips": True,
+    "same_text_is_translated": False
 }
 
 
@@ -151,7 +152,7 @@ class SettingsDialog(QDialog):
         
         ui_layout.addWidget(QLabel(self.tr("Selecciona el idioma de la interfaz:")))
         ui_layout.addWidget(self.ui_language_box)
-        ui_layout.addWidget(QLabel("⚠️ " + self.tr("Reinicia la aplicación para aplicar todos los cambios")))
+        ui_layout.addWidget(QLabel("⚠️ " + self.tr("Los cambios de interfaz se aplican al guardar la configuración")))
         
         group_ui.setLayout(ui_layout)
         layout.addWidget(group_ui)
